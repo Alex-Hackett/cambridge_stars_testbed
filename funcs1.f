@@ -200,7 +200,7 @@ C energy equation
       EN = EN + ENX
 C Inject the Artificial Energy if we are in the right mass region
       IF (YSHELLS(K).EQ.1) THEN
-        TOINJ = SHIENG * AMASSSH(K)
+        TOINJ = SHIENG * (AMASSSH(K) - AMASSSH(K + 1))
 *        WRITE (*,*) TOINJ, ' Energy Injected in Shell: ', K
       END IF
 *      WRITE (*,*) 'EX in Shell: ', K, ' is: ', EX

@@ -7,6 +7,7 @@ C Following is the main routine
       IMPLICIT REAL*8 (A-H,O-Z)
       SAVE
       PARAMETER (MAXMSH = 2000)
+      REAL MSUM
       COMMON H(60,MAXMSH),DH(60,MAXMSH),EPS,V(2),NMESH,JIN,ID(100),IE(100)
       COMMON /EVMODE/ IMODE
       COMMON /SODDS / ALPHA, RML, CMG, CSI, CFE, CT(10), AGE, DT, M1, 
@@ -53,9 +54,11 @@ C     be injected into each one!
 *         WRITE (*,*) SUM(YSHELLS)
          MSUM = 0
          DO i = 1, MAXMSH
-            IF (YSHELLS(i).EQ.1) MSUM = MSUM + AMASSSH(i)
+            IF (YSHELLS(i).EQ.1) MSUM = MSUM + (AMASSSH(i) - AMASSSH(i + 1))
          ENDDO
+         
          SHIENG = TENG / REAL(MSUM)
+*         WRITE (*,*) SHIENG
          
             
          
