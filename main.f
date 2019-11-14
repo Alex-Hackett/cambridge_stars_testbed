@@ -51,7 +51,11 @@ C Search the shell mass array AMASSSH, to see where the valid mass coordinates f
 C     Sum the number of valid shells, to determine how much energy should
 C     be injected into each one!
 *         WRITE (*,*) SUM(YSHELLS)
-         SHIENG = TENG / REAL(SUM(YSHELLS))
+         MSUM = 0
+         DO i = 1, MAXMSH
+            IF (YSHELLS(i).EQ.1) MSUM = MSUM + AMASSSH(i)
+         ENDDO
+         SHIENG = TENG / REAL(MSUM)
          
             
          
