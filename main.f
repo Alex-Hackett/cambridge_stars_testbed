@@ -69,7 +69,7 @@ C     array so that we can multiply this in later...
      &                * (3.14159 / MAXVAL(AMASSSH)))
                 ENDIF
             ENDDO
-            WRITE (*,*) 'SIN Scaled, but not yet scaled by energy', SCALEMASS
+*            WRITE (*,*) 'SIN Scaled, but not yet scaled by energy', SCALEMASS
 *       Sum up these masses, and scale to the energy needed
             EUNSCALE = 0
             DO i = 1, MAXMSH
