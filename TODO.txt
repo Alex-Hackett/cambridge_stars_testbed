@@ -1,0 +1,35 @@
+This is the top-level TODO list for the Cambridge Stars testbed
+
+Current Tasks:
+
+	Safety checks in case the meshpoint resolution is ever insufficent
+	to cover the area in which the energy is being deposited (a warning
+	or an error would be very easy to do, but actually altering the mesh
+	to provide the desired resolution seems like it would probably be very
+	hard to actually pull off)
+
+	Add triangular and exp spacial energy profiles as options. Will need
+	to be defined piecewise, so will probably be a fair bit trickier to
+	pull off compared to the sin and the top-hat, but given that the sin
+	versus the top-hat doesn't produce a massive change yet, it's probably
+	not a top priority
+
+	Add a "time of injection" control, essentially, a method by which
+	the desired age of when the energy injection was to start, and when
+	it is the end could be selected. Shouldn't be at all difficult to do in
+	a very simple on/off style, with the potential problem that the 
+	time step could be too large to resolve the injection, and could even
+	gloss over the entire desired window completely, will need some way of
+	"looking into the future" to see when the window is approaching, and
+	to quickly (but not too quickly!!) winding down the time-step to ensure
+	that the injection window is properly resolved, and then cranking it
+	back up slowly afterwards
+
+	Once time of injection control is added, it would then seem sensible to
+	have some control over the injection profile in time, as well as in
+	space. This would be more difficult, since, at least mesh-point mass
+	spacing doesn't change over the course of a single time-step, where as
+	the time-step will (most likely) change over the injection window
+	An initial idea might be to freeze the time-step in place during the
+	injection window, which would make the maths nice and simple,
+	but would probably end up ruining things in various edge cases...
