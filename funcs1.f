@@ -198,6 +198,7 @@ C Convert mass to solar units for comparison
 C energy equation
       VL = L
       EN = EN + ENX
+      TOINJ = 0
 C Inject the Artificial Energy if we are in the right mass region
       IF (YSHELLS(K).EQ.1) THEN
 C          For the tophat case
@@ -205,8 +206,9 @@ C          For the tophat case
 C           For the triangular case TODO
 *        IF (INJMD.EQ.0) TOINJ
 C           For the Sin case
-        IF (INJMD.EQ.2) TOINJ = SHIENG * SCALEMASS(i)
+        IF (INJMD.EQ.2) TOINJ = SHIENG * SCALEMASS(K)
       END IF
+*      WRITE (*,*) 'Injecting: ', TOINJ, ' Energy Units into Meshpoint: ', K, ' at Mass Coordinate: ', AMASSSH(k)
 *      WRITE (*,*) 'EX in Shell: ', K, ' is: ', EX
 *** assume thermal eq. in central region if timestep small
 *      ITHC = ITH

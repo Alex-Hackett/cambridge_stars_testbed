@@ -109,7 +109,7 @@ C Print out the artifical energy stuff, see if it works
       IF (INJMD.EQ.0) WRITE (*,*) 'Artificial Energy Injection Profile in Mass: ', 'TOP-HAT'
       IF (INJMD.EQ.1) WRITE (*,*) 'Artificial Energy Injection Profile in Mass: ', 'TRIANGULAR'
       IF (INJMD.EQ.2) WRITE (*,*) 'Artificial Energy Injection Profile in Mass: ', 'SINE'
-      IF (INJMD.EQ.0) WRITE (*,*) 'Artificial Energy Injection Profile in Mass: ', 'EXP'
+      IF (INJMD.EQ.3) WRITE (*,*) 'Artificial Energy Injection Profile in Mass: ', 'EXP'
 C Idiot proofing -- otherwise the logic in solver will fail
       FACSGMIN = DMIN1(1d0, FACSGMIN)
 C Read data for initial model (often last model of previous run)

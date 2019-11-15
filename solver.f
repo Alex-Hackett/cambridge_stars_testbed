@@ -124,7 +124,7 @@ C EVALUATE FUNCTIONS AT SURFACE MESHPOINT
          CALL DIFRNS(K, NOC, ITER, N15, NE, 60+NEV)
          CALL DIVIDE(N15, N6, NE, N7, N8, K)
 *         WRITE (*,*) 'Mass in Shell', K, ' is: ', DEXP(AM) / 1.989100019999
-         AMASSSH(K) = DEXP(AM) / 1.989100019999
+         AMASSSH(K) = DEXP(AM) / 1.9891000199999999
          K = K1 + 1
          IF ( K.GT.K2 ) GO TO 100
 C DITTO NEXT-TO-SURFACE, ELIMINATING SOME UNKNOWNS
@@ -132,7 +132,7 @@ C DITTO NEXT-TO-SURFACE, ELIMINATING SOME UNKNOWNS
          CALL ELIMN8(N2, NE, N3, N15, N4, N5, K-1)
          CALL DIVIDE(1, N4, NE, N7, N8, K)
 *         WRITE (*,*) 'Mass in Shell', K, ' is: ', DEXP(AM) / 1.989100019999
-         AMASSSH(K) = DEXP(AM) / 1.989100019999
+         AMASSSH(K) = DEXP(AM) / 1.9891000199999999
  50      CONTINUE
          K = K + 1
          IF ( K.LE.K2 ) THEN
@@ -145,7 +145,7 @@ C DITTO REMAINING MESHPOINTS
             CALL ELIMN8(N2, NE, N3, N15, N4, N5, K-1)
             CALL DIVIDE(1, N4, NE, N7, N8, K)
 *            WRITE (*,*) 'Mass in Shell', K, ' is: ', DEXP(AM) / 1.989100019999
-            AMASSSH(K) = DEXP(AM) / 1.989100019999
+            AMASSSH(K) = DEXP(AM) / 1.9891000199999999
             GO TO 50
          END IF
          CALL DIFRNS(K, NOC, ITER, 1, N16, 60)

@@ -63,11 +63,13 @@ C     function, we'll need to precalc this, store it in the scalemass
 C     array so that we can multiply this in later...   
 ********SIN INJECTION****************      
          IF (INJMD.EQ.2) THEN
-            DO i = 1, MAXMSH
-                IF (YSHELLS(i).EQ.1) THEN
-                    SCALEMASS(i) = SIN(AMASSSH(i) - AMASSSH(i + 1))
+             DO i = 1, MAXMSH
+                IF (YSHELLS(i).EQ.1) THEN                 
+                    SCALEMASS(i) = SIN(((AMASSSH(i)) - (AMASSSH(i+1)))
+     &                * (3.14159 / MAXVAL(AMASSSH)))
                 ENDIF
             ENDDO
+            WRITE (*,*) 'SIN Scaled, but not yet scaled by energy', SCALEMASS
 *       Sum up these masses, and scale to the energy needed
             EUNSCALE = 0
             DO i = 1, MAXMSH
@@ -77,7 +79,7 @@ C     array so that we can multiply this in later...
             ENDDO
 *        EUNSCALE needs to be equal to TENG, but it'll obviously not be!
             SCALEFAC = 0
-            SCALEFAC = TENG / EUNSCALE
+            SCALEFAC = REAL(TENG) / REAL(EUNSCALE)
 *       TEST, print the difference between TENG and EUNSCALE * SCALEFAC
 *            WRITE (*,*) 'DEBUG: DIFFERENCE BETWEEN TENG AND EUNSCALE * SCALEFAC SHOULD BE ZERO, is:  ', TENG - (EUNSCALE * SCALEFAC)            
 *       SCALEFAC * each element in SCALEMASS will produce a scaled list of masses
@@ -86,6 +88,7 @@ C     array so that we can multiply this in later...
                 SCALEMASS(i) = SCALEMASS(i) * SCALEFAC
             ENDDO                    
          ENDIF
+*         WRITE (*,*) 'SCALED MASSES', SCALEMASS
 *         WRITE (*,*) SHIENG
          
             
