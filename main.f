@@ -14,8 +14,8 @@ C Following is the main routine
      :  EC, BM, ANG, CM, MTA, MTB, TM(2), T0, M0, TC(2), OS, AC, RCD,
      :  RMG, RHL, XF, DR, AK1 ,RMT, AK2, IZ(4), IB, ISX(45),
      :  TRB
-      COMMON /MASTRK/ AMASSSH(MAXMSH), YSHELLS(MAXMSH)
-      COMMON /ARTENG/ TENG, SMASS, FMASS, SHIENG
+      COMMON /MASTRK/ AMASSSH(MAXMSH), YSHELLS(MAXMSH), SCALEMASS(MAXMSH)
+      COMMON /ARTENG/ TENG, SMASS, FMASS, SHIENG, INJMD
       real dtime,cpu(2),dt,tcpu
 C Read physical data and an initial model
       CALL PRINTA ( -1, NSTEP, ITER1, ITER2, NWRT5 )
@@ -58,6 +58,34 @@ C     be injected into each one!
          ENDDO
          
          SHIENG = TENG / REAL(MSUM)
+C     That'll do for the tophat injection, but for the sin
+C     function, we'll need to precalc this, store it in the scalemass 
+C     array so that we can multiply this in later...   
+********SIN INJECTION****************      
+         IF (INJMD.EQ.2) THEN
+            DO i = 1, MAXMSH
+                IF (YSHELLS(i).EQ.1) THEN
+                    SCALEMASS(i) = SIN(AMASSSH(i) - AMASSSH(i + 1))
+                ENDIF
+            ENDDO
+*       Sum up these masses, and scale to the energy needed
+            EUNSCALE = 0
+            DO i = 1, MAXMSH
+                IF (YSHELLS(i).EQ.1) THEN
+                    EUNSCALE = EUNSCALE + (SCALEMASS(i) * SHIENG)
+                ENDIF
+            ENDDO
+*        EUNSCALE needs to be equal to TENG, but it'll obviously not be!
+            SCALEFAC = 0
+            SCALEFAC = TENG / EUNSCALE
+*       TEST, print the difference between TENG and EUNSCALE * SCALEFAC
+*            WRITE (*,*) 'DEBUG: DIFFERENCE BETWEEN TENG AND EUNSCALE * SCALEFAC SHOULD BE ZERO, is:  ', TENG - (EUNSCALE * SCALEFAC)            
+*       SCALEFAC * each element in SCALEMASS will produce a scaled list of masses
+*       SCALEMASS will be used instead of AMASSH in funcs1.f to inject energy
+            DO i = 1, MAXMSH
+                SCALEMASS(i) = SCALEMASS(i) * SCALEFAC
+            ENDDO                    
+         ENDIF
 *         WRITE (*,*) SHIENG
          
             

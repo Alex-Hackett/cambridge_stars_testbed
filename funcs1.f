@@ -48,12 +48,12 @@ C rest of this subroutine. RJS 5/7/06
       COMMON /IONISE/ MSTORE(8,5), MSTORE2(5)
       COMMON /DIFFUS/ D(10), A12(10)
 *      REAL MASSSH(MAXMSH)
-      COMMON /MASTRK/ AMASSSH(MAXMSH), YSHELLS(MAXMSH)
+      COMMON /MASTRK/ AMASSSH(MAXMSH), YSHELLS(MAXMSH), SCALEMASS(MAXMSH)
       
       
 *     Final Common for the mass-based artificial energy
 *      REAL TENG, SMASS, FMASS
-      COMMON /ARTENG/ TENG, SMASS, FMASS, SHIENG
+      COMMON /ARTENG/ TENG, SMASS, FMASS, SHIENG, INJMD
       
       DIMENSION XSPEC(6), DDMIX(10), MUXX(6)
       CBRT(VX) = DEXP(DLOG(VX)/3.0D0)
@@ -200,8 +200,12 @@ C energy equation
       EN = EN + ENX
 C Inject the Artificial Energy if we are in the right mass region
       IF (YSHELLS(K).EQ.1) THEN
-        TOINJ = SHIENG * (AMASSSH(K) - AMASSSH(K + 1))
-*        WRITE (*,*) TOINJ, ' Energy Injected in Shell: ', K
+C          For the tophat case
+        IF (INJMD.EQ.0) TOINJ = SHIENG * (AMASSSH(K) - AMASSSH(K + 1))
+C           For the triangular case TODO
+*        IF (INJMD.EQ.0) TOINJ
+C           For the Sin case
+        IF (INJMD.EQ.2) TOINJ = SHIENG * SCALEMASS(i)
       END IF
 *      WRITE (*,*) 'EX in Shell: ', K, ' is: ', EX
 *** assume thermal eq. in central region if timestep small
