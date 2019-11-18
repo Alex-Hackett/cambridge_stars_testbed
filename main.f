@@ -16,6 +16,7 @@ C Following is the main routine
      :  TRB
       COMMON /MASTRK/ AMASSSH(MAXMSH), YSHELLS(MAXMSH), SCALEMASS(MAXMSH)
       COMMON /ARTENG/ TENG, SMASS, FMASS, SHIENG, INJMD
+      COMMON /INJTIMECTRL/ STARTTIMEINJ, ENDTIMEINJ
       real dtime,cpu(2),dt,tcpu
 C Read physical data and an initial model
       CALL PRINTA ( -1, NSTEP, ITER1, ITER2, NWRT5 )
@@ -39,6 +40,13 @@ C Have we reached the set age?
          
 C Solve for structure, mesh, and major composition variables
          CALL SOLVER ( 1, ITER, KTER, ERR, ID, NWRT5 )
+C Check if we are at the right age to perform the injection, if not,
+C Just set the injection energy to zero and skip all of this 
+         IF ((AGE.LT.STARTTIMEINJ).OR.(AGE.GT.ENDTIMEINJ)) THEN
+            SHIENG = 0
+            WRITE (*,*) 'Skipping, Age is Wrong'
+            GOTO 10
+         ENDIF            
 C Search the shell mass array AMASSSH, to see where the valid mass coordinates for energy injection are
          DO i = 1, MAXMSH
             IF ((AMASSSH(i).GT.SMASS).AND.(AMASSSH(i).LT.FMASS)) THEN
@@ -94,6 +102,8 @@ C     array so that we can multiply this in later...
             
          
 *         WRITE (*,*) 'Masses of Shells', AMASSSH
+********** END OF ARTIFICAL ENERGY INJECTION STUFF***********
+   10    CONTINUE 
          IF (ERR.LT.EPS) npr = nm
          IF (ERR.LT.EPS) nm = nm + 1
          nter = nter + kter
