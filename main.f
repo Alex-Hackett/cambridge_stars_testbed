@@ -44,7 +44,7 @@ C Check if we are at the right age to perform the injection, if not,
 C Just set the injection energy to zero and skip all of this 
          IF ((AGE.LT.STARTTIMEINJ).OR.(AGE.GT.ENDTIMEINJ)) THEN
             SHIENG = 0
-            WRITE (*,*) 'Skipping, Age is Wrong'
+*            WRITE (*,*) 'Skipping, Age is Wrong'
             GOTO 10
          ENDIF            
 C Search the shell mass array AMASSSH, to see where the valid mass coordinates for energy injection are

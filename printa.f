@@ -107,8 +107,15 @@ C Print out the artifical energy stuff, see if it works
       WRITE (*,*) 'Desired Total Artificial Energy Injection: ', TENG
       WRITE (*,*) 'Desired Mass Below Base of Artificial Energy Region: ', SMASS
       WRITE (*,*) 'Desired Mass Below Top of Artificial Energy Region: ', FMASS
-      WRITE (*,*) 'Artificial Energy Injection to Start at: ', STARTTIMEINJ, 'Yrs'
-      WRITE (*,*) 'Artificial Energy Injection to End at: ', ENDTIMEINJ, 'Yrs' 
+      
+      IF (STARTTIMEINJ.LT.10**6) WRITE (*,*) 'Artificial Energy Injection to Start at: ', STARTTIMEINJ, 'Yrs'
+      IF ((STARTTIMEINJ.GT.10**6).AND.(STARTTIMEINJ.LT.10**9)) WRITE (*,*) 'Artificial Energy Injection to Start at: ', STARTTIMEINJ / 10**6, 'Myrs'
+      IF (STARTTIMEINJ.GE.10**9) WRITE (*,*) 'Artificial Energy Injection to Start at: ', STARTTIMEINJ / 10**9, 'Gyrs'
+      
+      IF (ENDTIMEINJ.LT.10**6) WRITE (*,*) 'Artificial Energy Injection to End at: ', ENDTIMEINJ, 'Yrs'
+      IF ((ENDTIMEINJ.GT.10**6).AND.(ENDTIMEINJ.LT.10**9)) WRITE (*,*) 'Artificial Energy Injection to End at: ', ENDTIMEINJ / 10**6, 'Myrs'
+      IF (ENDTIMEINJ.GE.10**9) WRITE (*,*) 'Artificial Energy Injection to End at: ', ENDTIMEINJ / 10**9, 'Gyrs'
+      
       IF (INJMD.EQ.0) WRITE (*,*) 'Artificial Energy Injection Profile in Mass: ', 'TOP-HAT'
       IF (INJMD.EQ.1) WRITE (*,*) 'Artificial Energy Injection Profile in Mass: ', 'TRIANGULAR'
       IF (INJMD.EQ.2) WRITE (*,*) 'Artificial Energy Injection Profile in Mass: ', 'SINE'
