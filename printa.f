@@ -38,6 +38,7 @@
 *      REAL TENG, SMASS, FMASS
       COMMON /ARTENG/ TENG, SMASS, FMASS, SHIENG, INJMD
       COMMON /INJTIMECTRL/ STARTTIMEINJ, ENDTIMEINJ
+      COMMON /AGECTRL/ ENDAGE
 
 * Extra COMMON for main-sequence evolution.
 *
@@ -61,7 +62,7 @@
      :3,/), 9F5.2, 1P, 3E8.1,
      :/, E9.2, 0P, 9F6.3, /, 1P, 2(7E9.2, /), 0P, I2, 2(I2,1X,E8.2),2(1X,F4.2)
      : ,/, I2,F6.1,I2,F6.1, 1X, F4.2, I2, I2, 2(1X, E8.2)
-     : ,/, 3E14.6, I2, 2E14.6)
+     : ,/, 3E14.6, I2, 2E14.6, /, E14.6)
 99004 FORMAT (1X, 10F7.3)
 99005 FORMAT (1X, 1P, 2E14.6, E17.9, 3E14.6, 0P, 4I6, 1P, 2E11.3)
       IF ( IEND.NE.-1 ) GO TO 30
@@ -102,8 +103,49 @@ C Read miscellaneous data, usually unchanged during one evol run
      :TRB,
      :IRAM, IRS1, VROT1, IRS2, VROT2, FMAC, FAM,
      :IVMC, TRC1, IVMS, TRC2, MWTS, IAGB, ISGFAC, FACSGMIN, SGTHFAC,
-     :TENG, SMASS, FMASS, INJMD, STARTTIMEINJ, ENDTIMEINJ
+     :TENG, SMASS, FMASS, INJMD, STARTTIMEINJ, ENDTIMEINJ,
+     :ENDAGE
+     
+
+C Idiot proofing -- otherwise the logic in solver will fail
+      FACSGMIN = DMIN1(1d0, FACSGMIN)
+C Read data for initial model (often last model of previous run)
+C e.g. SM = stellar mass, solar units; DTY = next timestep, years	 
+      READ  (30, 99005) SM, DTY, AGE, PER, BMS, EC,NH,NP,NMOD,IB,PMH(1),PME(1)
+      WRITE (32,99003) NH2,IT1,IT2,JIN,JOUT,NCH,JP,IZ,IMODE,
+     :ICL,ION,IAM,IOP,IBC,INUC,ICN,IML(1),IML(2), ISGTH, IMO, IDIFF,
+     :NT1,NT2,NT3,NT4,NT5,NSV,NMONT,
+     :EP,DT3,DD,ID,ISX,DT1,DT2,CT,ZS,ALPHA,CH,CC,CN,CO, 
+     :CNE,CMG,CSI,CFE,RCD,OS,RML,RMG,ECA,XF,DR,RMT,RHL,AC,AK1,AK2,ECT,
+     :TRB,
+     :IRAM, IRS1, VROT1, IRS2, VROT2, FMAC, FAM,
+     :IVMC, TRC1, IVMS, TRC2, MWTS, IAGB, ISGFAC, FACSGMIN, SGTHFAC,
+     :TENG, SMASS, FMASS, INJMD, STARTTIMEINJ, ENDTIMEINJ,
+     :ENDAGE
+      WRITE (32, 99005)
+      WRITE (32, 99005) SM, DTY, AGE, PER, BMS, EC,NH,NP,NMOD,IB,PMH(1),PME(1)
+      
+C Print out some basic details about the run
+      WRITE (*,*) '================================================================================================================================'
+      WRITE (*,*) '_______ _______ _______ ______   ______ _____ ______   ______ _______      _______ _______ _______  ______ _______'
+      WRITE (*,*) '|       |_____| |  |  | |_____] |_____/   |   |     \ |  ____ |______      |______    |    |_____| |_____/ |______'
+      WRITE (*,*) '|_____  |     | |  |  | |_____] |    \_ __|__ |_____/ |_____| |______      ______|    |    |     | |    \_ ______|'
+                                                                                                                   
+      WRITE (*,*) '================================================================================================================================'
+      WRITE (*,*) '================================================================================================================================'
+
+      IF (SM.EQ.1) WRITE (*,*) 'Initial Mass of Star: ', SM, 'Solar Mass'
+      IF (SM.NE.1) WRITE (*,*) 'Initial Mass of Star: ', SM, 'Solar Masses'
+      
+      IF (ENDAGE.LE.10**6) WRITE (*,*) 'Desired Final Age of Star: ', ENDAGE, 'Yrs'
+      IF ((ENDAGE.GT.10**6).AND.(ENDAGE.LT.10**9)) WRITE (*,*) 'Desired Final Age of Star: ', ENDAGE / 10**6, 'Myrs'
+      IF (ENDAGE.GE.10**9) WRITE (*,*) 'Desired Final Age of Star: ', ENDAGE / 10**9, 'Gyrs'
+      WRITE (*,*) 'Maximum Number of Allowed Models: ', NP
+      WRITE (*,*) '===================================================================================================='
+      
+           
 C Print out the artifical energy stuff, see if it works
+      WRITE (*,*) '===================================================================================================='
       WRITE (*,*) 'Desired Total Artificial Energy Injection: ', TENG
       WRITE (*,*) 'Desired Mass Below Base of Artificial Energy Region: ', SMASS
       WRITE (*,*) 'Desired Mass Below Top of Artificial Energy Region: ', FMASS
@@ -120,22 +162,8 @@ C Print out the artifical energy stuff, see if it works
       IF (INJMD.EQ.1) WRITE (*,*) 'Artificial Energy Injection Profile in Mass: ', 'TRIANGULAR'
       IF (INJMD.EQ.2) WRITE (*,*) 'Artificial Energy Injection Profile in Mass: ', 'SINE'
       IF (INJMD.EQ.3) WRITE (*,*) 'Artificial Energy Injection Profile in Mass: ', 'EXP'
-C Idiot proofing -- otherwise the logic in solver will fail
-      FACSGMIN = DMIN1(1d0, FACSGMIN)
-C Read data for initial model (often last model of previous run)
-C e.g. SM = stellar mass, solar units; DTY = next timestep, years	 
-      READ  (30, 99005) SM, DTY, AGE, PER, BMS, EC,NH,NP,NMOD,IB,PMH(1),PME(1)
-      WRITE (32,99003) NH2,IT1,IT2,JIN,JOUT,NCH,JP,IZ,IMODE,
-     :ICL,ION,IAM,IOP,IBC,INUC,ICN,IML(1),IML(2), ISGTH, IMO, IDIFF,
-     :NT1,NT2,NT3,NT4,NT5,NSV,NMONT,
-     :EP,DT3,DD,ID,ISX,DT1,DT2,CT,ZS,ALPHA,CH,CC,CN,CO, 
-     :CNE,CMG,CSI,CFE,RCD,OS,RML,RMG,ECA,XF,DR,RMT,RHL,AC,AK1,AK2,ECT,
-     :TRB,
-     :IRAM, IRS1, VROT1, IRS2, VROT2, FMAC, FAM,
-     :IVMC, TRC1, IVMS, TRC2, MWTS, IAGB, ISGFAC, FACSGMIN, SGTHFAC,
-     :TENG, SMASS, FMASS, INJMD, STARTTIMEINJ, ENDTIMEINJ
-      WRITE (32, 99005)
-      WRITE (32, 99005) SM, DTY, AGE, PER, BMS, EC,NH,NP,NMOD,IB,PMH(1),PME(1)
+      WRITE (*,*) '===================================================================================================='
+      
 C Convert RML from eta to coefficient required
       RML = 4d-13*RML
 *     
@@ -143,6 +171,7 @@ C Convert RML from eta to coefficient required
 *
       IF (IOP .EQ. 1) CALL OPSPLN
 !extra lines for COopac bit
+      WRITE (*,*) '===================================================================================================='
       write(*,*) 'Selection for opacity is:',IOP
       cbase=ZS*CC
       obase=ZS*CO
@@ -172,6 +201,7 @@ C            write (*,*) K,b3
             enddo
          enddo
 *         CLOSE(10)
+         WRITE (*,*) '===================================================================================================='
 c     Bit to add in variable molecular bits from old paper in Marigo
 c     Setup composition matrix
          if(IOP.eq.4.or.IOP.eq.6) then

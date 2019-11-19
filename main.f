@@ -17,6 +17,7 @@ C Following is the main routine
       COMMON /MASTRK/ AMASSSH(MAXMSH), YSHELLS(MAXMSH), SCALEMASS(MAXMSH)
       COMMON /ARTENG/ TENG, SMASS, FMASS, SHIENG, INJMD
       COMMON /INJTIMECTRL/ STARTTIMEINJ, ENDTIMEINJ
+      COMMON /AGECTRL/ ENDAGE
       real dtime,cpu(2),dt,tcpu
 C Read physical data and an initial model
       CALL PRINTA ( -1, NSTEP, ITER1, ITER2, NWRT5 )
@@ -37,7 +38,10 @@ C Have we reached the set age?
          IF (AGE.LT.10**6) WRITE (*,*) 'Solving Model: ', NM, '     Model Age: ', AGE, 'Yrs'
          IF ((AGE.LT.10**9).AND.(AGE.GT.10**6)) WRITE (*,*) 'Solving Model: ', NM, '     Model Age: ', AGE/(10**6), 'Myr'
          IF (AGE.GT.10**9) WRITE (*,*) 'Solving Model: ', NM, '     Model Age: ', AGE/(10**9), 'Gyr'
-         
+         IF (AGE.GE.ENDAGE) THEN
+            WRITE (*,*) '!!AGE CUTOFF REACHED: TERMINATING!!'
+            GOTO 3
+         ENDIF
 C Solve for structure, mesh, and major composition variables
          CALL SOLVER ( 1, ITER, KTER, ERR, ID, NWRT5 )
     
