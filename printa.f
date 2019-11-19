@@ -402,6 +402,46 @@ C Reduce timestep if He luminosity is increasing too fast -- useful on AGB
             IF ((VLEC(ISTAR) - VLEP(ISTAR))/VLEP(ISTAR).GT.0.05.AND.
      :           VLEC(ISTAR).GT.1d3) DTY = 0.8*DTY
          END IF
+         
+C Trying this again, we need to reduce the timestep while we're injecting energy
+         IF ((AGE.GE.STARTTIMEINJ).AND.(AGE.LE.ENDTIMEINJ)) THEN
+            IF (DTY.GT.((ENDTIMEINJ - STARTTIMEINJ)/100)) THEN
+                DTY = 0.8 * DTY
+*                WRITE (*,*) 'Timestep Cut'
+            ENDIF
+         ENDIF
+         
+         
+         
+         
+         
+C Control mechanism for dealing with artificial energy generation
+C Works to ensure that the timestep is of a reasonable size by the time
+C We reach the injection time
+C Need to see if we're within 50 current timesteps of the injection starttime
+C Make sure we're not already done with the injection though!!
+
+*         IF (((AGE + (DTY * 100)).GT.(STARTTIMEINJ)).AND.(AGE.LT.ENDTIMEINJ).AND.(AGE.LT.STARTTIMEINJ)) THEN
+*            WRITE (*,*) 'APPROACHING INJECTION TIMESTEP'
+C           Work out how many "fine" we need the timestep
+C           At the time of injection, we want the timestep to be 
+C           at max, 1/100 of the injection time
+*            IF ((DTY*100).LE.(ENDTIMEINJ - STARTTIMEINJ)) GOTO 96
+*            DTY = DTY * 80 ! Cut DTY to 80% to ensure we get there!   
+*            WRITE (*,*) 'TIMESTEP CUT TO: ', DTY
+*            
+*         ENDIF
+C        Okay, have we reached the injection timesteps?         
+*         IF ((AGE.GT.STARTTIMEINJ).AND.(AGE.LT.ENDTIMEINJ)) THEN  
+*            WRITE (*,*) 'INJECTING ENERGY'
+C           Okay, is our timestep small enough? 
+*            IF (DTY.GT.((ENDTIMEINJ - STARTTIMEINJ) / 100)) THEN
+*                DTY = (ENDTIMEINJ - STARTTIMEINJ) / 100
+*                WRITE (*,*) '!!TIMESTEP TOO LARGE AT INJECTION, REDUCING NOW!!'
+*            ENDIF         
+*         ENDIF
+*   96    CONTINUE
+*         WRITE (*,*) 'Current Timestep: ', DTY, 'Yrs'
 C Extra control mechanisms that can be uncommented as necessary - RJS
 C         IF ((VLHC(ISTAR) - VLHP(ISTAR))/VLHP(ISTAR).GT.0.10) DTY = 0.8*DTY
 C         IF ((VLCC(ISTAR) - VLCP(ISTAR))/VLCP(ISTAR).GT.0.10) DTY = 0.8*DTY

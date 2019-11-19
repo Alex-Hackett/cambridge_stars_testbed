@@ -40,6 +40,11 @@ C Have we reached the set age?
          
 C Solve for structure, mesh, and major composition variables
          CALL SOLVER ( 1, ITER, KTER, ERR, ID, NWRT5 )
+    
+    
+C We need to do timestep "messing" in printa.f, otherwise, this will
+C be awfully messy, so hope over there now for timestep control regarding
+CArtificial energy injection    
 C Check if we are at the right age to perform the injection, if not,
 C Just set the injection energy to zero and skip all of this 
          IF ((AGE.LT.STARTTIMEINJ).OR.(AGE.GT.ENDTIMEINJ)) THEN
@@ -140,6 +145,7 @@ C If model didn't converge, give up
          IF (ERR.GT.EPS) WRITE (*,*) '!!FAILED TO CONVERGE, TERMINATING!!'
          IF (ERR.GT.EPS) GO TO 3
          IF (ERR.LT.EPS) CALL PRINTA ( 0, NSTEP, ITER1, ITER2, NWRT5 )
+         
     1 ITER = ITER2
       GOTO 2
 C Output the last converged model. 
