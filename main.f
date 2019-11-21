@@ -28,8 +28,10 @@ C Read physical data and an initial model
       npr = nm
       tcpu = dtime(cpu)
       tcpu = 0.0
+
 C Begin evolutionary loop of NSTEP time steps
     2 IF (NM .EQ. NSTEP) GOTO 3
+
 C Have we reached the set age?
 *      IF (AGE.GT.(1.27038904*10)**10) THEN
 *        WRITE (*,*) 'Set Age Reached'
@@ -156,3 +158,5 @@ C Output the last converged model.
     3 CALL PRINTA ( 1, NSTEP, ITER1, ITER2, NWRT4 )
       STOP
       END
+
+      
