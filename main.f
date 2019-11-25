@@ -40,7 +40,7 @@ C Have we reached the set age?
          IF (AGE.LT.10**6) WRITE (*,*) 'Solving Model: ', NM, '     Model Age: ', AGE, 'Yrs'
          IF ((AGE.LT.10**9).AND.(AGE.GT.10**6)) WRITE (*,*) 'Solving Model: ', NM, '     Model Age: ', AGE/(10**6), 'Myr'
          IF (AGE.GT.10**9) WRITE (*,*) 'Solving Model: ', NM, '     Model Age: ', AGE/(10**9), 'Gyr'
-         IF (AGE.GE.ENDAGE) THEN
+         IF ((AGE.GE.ENDAGE).AND.(AGE.NE.0)) THEN
             WRITE (*,*) '!!AGE CUTOFF REACHED: TERMINATING!!'
             GOTO 3
          ENDIF
