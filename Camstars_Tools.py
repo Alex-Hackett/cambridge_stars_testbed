@@ -7,6 +7,9 @@ import matplotlib.pylab as plt
 import astropy as ap
 import os
 import pandas as pd
+import fortranformat as ff
+
+
 
 class CamRun:
     def __init__(self, run_dir):
@@ -19,11 +22,17 @@ class CamRun:
         Opens the data file in the run dir and reads all the vars into a
         pandas dataframe
         '''
+        file_to_read = ff.FortranRecordReader('(12I4,/,12I4,/,7I4,/,1P,5E8.1,0P,/,2(10I3,/,3(30I3,/)),3(15I3,/), 9F5.2, 1P, 3E8.1,/, E9.2, 0P, 9F6.3, /, 1P, 2(7E9.2, /), 0P, I2, 2(I2,1X,E8.2),2(1X,F4.2),/, I2,F6.1,I2,F6.1, 1X, F4.2, I2, I2, 2(1X, E8.2),/, 3E14.6, I2, 2E14.6, /, E14.6)')
+        with open(self.data_file_name, 'r') as f:
+            readfile = f.read()
+            file_to_read.read(readfile)
+        '''
         df = pd.DataFrame()
         with open(self.data_file_name, 'r') as f:
             for i, line in enumerate(f):
                 if i < 23:
                     df = pd.concat( [df, pd.DataFrame([tuple(line.strip().split(' '))])], ignore_index=True )
+        #df = df.replace(np.nan,'', regex=True)
         self.datafile = df
         #Reading all the data vars in
         self.data_NH2 = self.datafile[0][0]
@@ -77,8 +86,11 @@ class CamRun:
         self.data_IH = self.datafile[8][4]
         self.data_JH = self.datafile[9][4]
         
+        self.data_misc1 = self.datafile[:][5]
+        
         self.data_DT1 = self.datafile[0][15]
         self.data_DT2 = self.datafile[1][15]
+        self.data_CT = self.datafile[2:12][15]
         
         self.data_ZS = self.datafile[0][16]
         self.data_ALPHA = self.datafile[1][16]
@@ -133,5 +145,30 @@ class CamRun:
         self.data_ENDTIMEINJ = self.datafile[5][21]
         
         self.data_ENDAGE = self.datafile[0][22]
+        '''
+    def readModin(self):
+        df = pd.DataFrame()
+        with open(self.modin_file_name, 'r') as f:
+            for i, line in enumerate(f):
+                df = pd.concat( [df, pd.DataFrame([tuple(line.strip().split(' '))])], ignore_index=True )
+        self.modinfile = df
+        #read in the modin stuff
+        self.modin_mass = self.modinfile[0][0]
+        self.modin_dt = self.modinfile[1][0]
+        self.modin_age = self.modinfile[2][0]
+        self.modin_binary_period = self.modinfile[3][0]
+        self.modin_binary_mass = self.modinfile[4][0]
+        self.modin_EC = self.modinfile[5][0]
+        self.modin_meshpoint_number = self.modinfile[6][0]
+        self.modin_desired_models = self.modinfile[7][0]
+        self.modin_starting_model = self.modinfile[8][0]
+        self.modin_which_star = self.modinfile[9][0]
         
-        
+    def writeData(self):
+        '''
+        This uses ff to write back the data back onto the data file 
+        '''
+        with open(self.data_file_name, 'r+') as f:
+            file_to_write = ff.FortranRecordWriter('(12I4,/,12I4,/,7I4,/,1P,5E8.1,0P,/,2(10I3,/,3(30I3,/)),3(15I3,/), 9F5.2, 1P, 3E8.1,/, E9.2, 0P, 9F6.3, /, 1P, 2(7E9.2, /), 0P, I2, 2(I2,1X,E8.2),2(1X,F4.2),/, I2,F6.1,I2,F6.1, 1X, F4.2, I2, I2, 2(1X, E8.2),/, 3E14.6, I2, 2E14.6, /, E14.6)')
+            f.write(file_to_write.write([self.data_NH2, self.data_ITER1, self.data_ITER2, self.data_JIN, self.data_JOUT, self.data_NCH, self.data_JP, self.data_ITH, self.data_IX, self.data_IY, self.data_IZ, self.data_IMODE, self.data_ICL, self.data_ION, self.data_IAM, self.data_IOP, self.data_INUC, self.data_IBC, self.data_ICN, self.data_IML1, self.data_IML2, self.data_ISGTH, self.data_IMO, self.data_IDIFF, self.data_NWRT1, self.data_NWRT2, self.data_NWRT3, self.data_NWRT4, self.data_NWRT5, self.data_NSAVE, self.data_NMONT, self.data_EPS, self.data_DEL, self.data_DHO, self.data_DT3, self.data_DDD, self.data_NE1, self.data_NE2, self.data_NE3, self.data_NB, self.data_NEV, self.data_NF, self.data_J1, self.data_J2, self.data_IH, self.data_JH, self.data_misc, self.data_DT1, self.data_DT2, self.data_CT, self.data_ZS, self.data_ALPHA, self.data_CH, self.data_CC, self.data_CN, self.data_CO, self.data_CNE, self.data_CMG, self.data_CSI, self.data_CFE, self.data_RCD, self.data_OS, self.data_RML, self.data_RMG, self.data_ECA, self.data_XF, self.data_DR, self.data_RMT, self.data_RHL, self.data_AC, self.data_AK1, self.data_AK2, self.data_ECT, self.data_TRB, self.data_IRAM, self.data_IRS1, self.data_VROT1, self.data_IRS2, self.data_VROT2, self.data_FMAC, self.data_FAM, self.data_IVMC, self.data_TRC1, self.data_IVMS, self.data_TRC2, self.data_MWTS, self.data_IAGB, self.data_ISGFAC, self.data_FACSGIM, self.data_SGTHFAC, self.data_TENG, self.data_SMASS, self.data_FMASS, self.data_INJMD, self.data_STARTTIMEINJ, self.data_ENDTIMEINJ, self.data_ENDAGE]))
+            
