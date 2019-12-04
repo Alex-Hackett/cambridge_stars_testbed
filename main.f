@@ -169,8 +169,10 @@ C Compute the central degen param
 C Check to see if the model is going through the helium flash
       IF (((H(9, NMESH) + ZS).GT.(0.96D0)).AND.(PSICENTRAL.GT.6.D0).AND.
      &   (DLDT.GT.1.D-4).AND.(COREMASS.GT.0)) THEN
-        WRITE (*,*) 'ENTERING THE HELIUM FLASH'
-        WRITE (*,*) 'DUMPING MODEL TO FILE'
+        WRITE (*,*) 'ENTERING HELIUM FLASH'
+        TARGETCOREMASS = COREMASS
+        CALL FORCEHEFLASH(TARGETCOREMASS, NMESH)
+        WRITE (*,*) 'EXITING HELIUM FLASH'
           
       
           
