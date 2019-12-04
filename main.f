@@ -18,6 +18,9 @@ C Following is the main routine
       COMMON /ARTENG/ TENG, SMASS, FMASS, SHIENG, INJMD
       COMMON /INJTIMECTRL/ STARTTIMEINJ, ENDTIMEINJ
       COMMON /AGECTRL/ ENDAGE
+      COMMON /OP    / ZS, LEDD, VM, GR, GRAD, ETH, RLF, EGR, R, QQ
+      COMMON /YUK1  / PX(34), WMH, WMHE, VMH, VME, VMC, VMG, BE, VLH,
+     :                VLE, VLC, VLN, VLT, MCB(12),WWW(100)
       real dtime,cpu(2),dt,tcpu
 C Read physical data and an initial model
       CALL PRINTA ( -1, NSTEP, ITER1, ITER2, NWRT5 )
@@ -46,8 +49,9 @@ C Have we reached the set age?
          ENDIF
 C Solve for structure, mesh, and major composition variables
          CALL SOLVER ( 1, ITER, KTER, ERR, ID, NWRT5 )
-    
-    
+         VLEOLD = VLE
+C Grab the old VLE so we can check for the flash
+            
 C We need to do timestep "messing" in printa.f, otherwise, this will
 C be awfully messy, so hope over there now for timestep control regarding
 CArtificial energy injection    
@@ -153,10 +157,32 @@ C If model didn't converge, give up
          IF (ERR.LT.EPS) CALL PRINTA ( 0, NSTEP, ITER1, ITER2, NWRT5 )
          
     1 ITER = ITER2
+C Slightly insane bit where we compute dL/dt
+      VLENEW = VLE
+C Make sure we don't get a weird floating point error
+      DLDT = (VLENEW - VLEOLD)/DTY/(VLENEW+(1.D-15))
+C Grab the Helium core mass from the printb routines
+      COREMASS = VMH      
+C Compute the central degen param
+      WF = DSQRT(1.0D0 + DEXP(H(1, NMESH)))
+      PSICENTRAL = 2.0D0 * (WF - DLOG(WF + 1.0D0)) + H(1, NMESH)     
+C Check to see if the model is going through the helium flash
+      IF (((H(9, NMESH) + ZS).GT.(0.96D0)).AND.(PSICENTRAL.GT.6.D0).AND.
+     &   (DLDT.GT.1.D-4).AND.(COREMASS.GT.0)) THEN
+        WRITE (*,*) 'ENTERING THE HELIUM FLASH'
+        WRITE (*,*) 'DUMPING MODEL TO FILE'
+          
+      
+          
+      ENDIF  
+       
+      
+      
       GOTO 2
 C Output the last converged model. 
     3 CALL PRINTA ( 1, NSTEP, ITER1, ITER2, NWRT4 )
       STOP
       END
-
+      
+      
       
