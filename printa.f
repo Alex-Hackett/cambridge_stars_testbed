@@ -41,7 +41,8 @@
       COMMON /AGECTRL/ ENDAGE
 
 * Extra COMMON for main-sequence evolution.
-*
+*     
+      COMMON /FLASHSTORE/ SM, NM
       COMMON /ZAMS  / TKH(2)
       COMMON /MESH  / TRC1,TRC2,DD,DT1,DT2,MWT,MWTS,IVMC,IVMS
       COMMON /DHBLOC/ IDREDGE
@@ -65,7 +66,10 @@
      : ,/, 3E14.6, I2, 2E14.6, /, E14.6)
 99004 FORMAT (1X, 10F7.3)
 99005 FORMAT (1X, 1P, 2E14.6, E17.9, 3E14.6, 0P, 4I6, 1P, 2E11.3)
-      IF ( IEND.NE.-1 ) GO TO 30
+C Are we loading in a Helium flash model?
+      IF ((IEND.EQ.-2).OR.(IEND.EQ.-3)) GOTO 42
+C Or just loading in our initial model?
+      IF ( IEND.NE.-1 ) GOTO 30
 * Initialize physical constants
       CALL CONSTS
 C Read opacity, nuclear reaction and neutrino loss rate data
@@ -290,6 +294,59 @@ C Star 2 nucleosynthesis data
             READ(51, 99002, ERR = 12, END = 12) (HNUC(J,K), J=51, 100)
          END DO
       END IF
+***********************************************************************
+***********HELIUM FLASH MODEL READ*************************************      
+   42 CONTINUE
+      FILENAMESTORE(1) = 'src/flashdata/modin_for_3_msun' ! Unit 100
+      FILENAMESTORE(2) = 'src/flashdata/data_for_mass_strip'! Unit 101
+      FILENAMESTORE(3) = 'src/flashdata/data_for_core_growth'! Unit 102
+      FILENAMESTORE(4) = 'src/flashdata/nucmodin_for_3_msun'! Unit 103
+      IF (IEND.EQ.-3) GOTO 43
+C Read the mass loss bit****
+C Read the data file
+      OPEN(UNIT = 101,FILE=FILENAMESTORE(2),ACCESS='sequential',STATUS='old')
+      READ  (101,99003) NH2,IT1,IT2,JIN,JOUT,NCH,JP,IZ,IMODE,
+     :ICL,ION,IAM,IOP,IBC,INUC,ICN,IML(1),IML(2),ISGTH,IMO,IDIFF,
+     :NT1,NT2,NT3,NT4,NT5,NSV,NMONT,
+     :EP,DT3,DD,ID,ISX,DT1,DT2,CT,ZS,ALPHA,CH,CC,CN,CO, 
+     :CNE,CMG,CSI,CFE,RCD,OS,RML,RMG,ECA,XF,DR,RMT,RHL,AC,AK1,AK2,ECT,
+     :TRB,
+     :IRAM, IRS1, VROT1, IRS2, VROT2, FMAC, FAM,
+     :IVMC, TRC1, IVMS, TRC2, MWTS, IAGB, ISGFAC, FACSGMIN, SGTHFAC,
+     :TENG, SMASS, FMASS, INJMD, STARTTIMEINJ, ENDTIMEINJ,
+     :ENDAGE
+      CLOSE(101)
+C Read the initial 3 solar mass model
+      OPEN(UNIT=100,FILE=FILENAMESTORE(1),ACCESS='sequential',STATUS='old')
+      DO  K = 1, NH
+         READ (100, 99002) (H(J,K), J=1, JIN)
+      END DO
+      CLOSE(100)  
+      GOTO 44  
+   43 CONTINUE
+C Read the core grow bit****** 
+      OPEN(UNIT=102,FILE=FILENAMESTORE(3),ACCESS='sequential',STATUS='old')
+      READ  (102,99003) NH2,IT1,IT2,JIN,JOUT,NCH,JP,IZ,IMODE,
+     :ICL,ION,IAM,IOP,IBC,INUC,ICN,IML(1),IML(2),ISGTH,IMO,IDIFF,
+     :NT1,NT2,NT3,NT4,NT5,NSV,NMONT,
+     :EP,DT3,DD,ID,ISX,DT1,DT2,CT,ZS,ALPHA,CH,CC,CN,CO, 
+     :CNE,CMG,CSI,CFE,RCD,OS,RML,RMG,ECA,XF,DR,RMT,RHL,AC,AK1,AK2,ECT,
+     :TRB,
+     :IRAM, IRS1, VROT1, IRS2, VROT2, FMAC, FAM,
+     :IVMC, TRC1, IVMS, TRC2, MWTS, IAGB, ISGFAC, FACSGMIN, SGTHFAC,
+     :TENG, SMASS, FMASS, INJMD, STARTTIMEINJ, ENDTIMEINJ,
+     :ENDAGE
+      CLOSE(102)
+C Read the 3 solar mass nucleosynthsis bit TODO
+   44 CONTINUE
+*      OPEN(UNIT=103,FILE=FILENAMESTORE(4),ACCESS='sequential',STATUS='old')
+*      READ (103, 99005)
+*      DO K = 1, NH
+*         READ(103, 99002) (HNUC(J,K), J=1, 50)
+*      END DO
+*      CLOSE(103)   
+*************FINISHED THE HELIUM FLASH BIT*****************************
+    
 C Convert some things to `cgs' units: 10**11 cm, 10**33 gm, 10**33 erg/s 
    12 DT = CSECYR*DTY
       TM(1) = MSUN*SM

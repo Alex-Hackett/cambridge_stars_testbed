@@ -15,6 +15,7 @@ C Following is the main routine
      :  RMG, RHL, XF, DR, AK1 ,RMT, AK2, IZ(4), IB, ISX(45),
      :  TRB
       COMMON /MASTRK/ AMASSSH(MAXMSH), YSHELLS(MAXMSH), SCALEMASS(MAXMSH)
+      COMMON /FLASHSTORE/ SM, NM
       COMMON /ARTENG/ TENG, SMASS, FMASS, SHIENG, INJMD
       COMMON /INJTIMECTRL/ STARTTIMEINJ, ENDTIMEINJ
       COMMON /AGECTRL/ ENDAGE
@@ -123,7 +124,7 @@ C     array so that we can multiply this in later...
          IF (ERR.LT.EPS) nm = nm + 1
          nter = nter + kter
          dt = dtime(cpu)
-         tcpu = tcpu + dt
+         tcpu = tcpu + dtPRINTA ( -2, NSTEP, ITER1, ITER2, NWRT5 )
          IF (ERR.GT.EPS) kter = -kter
 C         write(61,99000) nm, kter, dt, dt/kter, nter, tcpu, tcpu/nter,
 C     &        tcpu/nm
@@ -171,12 +172,14 @@ C Check to see if the model is going through the helium flash
      &   (DLDT.GT.1.D-4).AND.(COREMASS.GT.0)) THEN
         WRITE (*,*) 'ENTERING HELIUM FLASH'
         TARGETCOREMASS = COREMASS
-        CALL FORCEHEFLASH(TARGETCOREMASS, NMESH)
+*        CALL FORCEHEFLASH(TARGETCOREMASS, NMESH)
         WRITE (*,*) 'EXITING HELIUM FLASH'
-          
-      
-          
       ENDIF  
+      
+      IF (VLE.GT.1.01D-10) THEN
+        WRITE(*,*) '!!!Core Helium Ignition Detected!!!'
+        GOTO 3
+      ENDIF
        
       
       
