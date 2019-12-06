@@ -4,14 +4,15 @@ C taking a 3 solar mass star that has just started non-degenerate
 C core He, and then adjusting it so it "matches" the "expected" 
 C post-Flash core He burning model
       IMPLICIT REAL*8 (A-H,N-Z)
+      PARAMETER (MAXMSH = 2000)
       REAL*8 RSTORE(100), HSTORE(60, MAXMSH), HNUCSTORE(100,MAXMSH)
       INTEGER ISTORE(100)
       CHARACTER*200 FILENAMESTORE(20)
       CHARACTER*43 M3MODELDIR
-      PARAMETER (MAXMSH = 2000)
       
+      SAVE
 C Required Common Blocks***********************************************
-      PARAMETER (MAXMSH = 2000)
+      
       COMMON /NUCMAT/ HNUC(100,MAXMSH), DHNUC(100,MAXMSH)
       COMMON /PREVM / HPR(60,MAXMSH),DHPR(60,MAXMSH),PR(14),MS(9999),
      &                ST(9999),NPR,KPR, HPPR(60,MAXMSH),
@@ -49,7 +50,7 @@ C Required Common Blocks***********************************************
 
 * Extra COMMON for main-sequence evolution.
 *     
-      COMMON /FLASHSTORE/ SM, NM
+      
       COMMON /ZAMS  / TKH(2)
       COMMON /MESH  / TRC1,TRC2,DD,DT1,DT2,MWT,MWTS,IVMC,IVMS
       COMMON /DHBLOC/ IDREDGE
@@ -112,7 +113,7 @@ C Store the nuke data
       
 C Now, need to read in the 3 solar mass for masslos, IEND = -2
       CALL PRINTA ( -2, NSTEP, ITER1, ITER2, NWRT5 )
-      SM, DTY, AGE, PER, BMS, EC,NH,NP,NMOD,IB,PMH(1),PME(1)
+*      SM, DTY, AGE, PER, BMS, EC,NH,NP,NMOD,IB,PMH(1),PME(1)
       
 C Now, we have a standard evolution loop
       ITER = 100
@@ -165,7 +166,7 @@ C Load in the core burning model
 C Okay, with all this done, lets restore the envelope compositions
       i=1
       j=1
-      DO WHILE ((i.LT.MAXSH).AND.((DEXP() / MSUN).GT.(COREMASS + 1.D-2)))
+      DO WHILE ((i.LT.MAXSH).AND.((DEXP(H(4,i)) / MSUN).GT.(COREMASS + 1.D-2)))
 C As Ross did, lets perform a linear interpolation in log mass space
          DO WHILE (H(4,i).LT.HSTORE(4,j+1))
             j = j+1

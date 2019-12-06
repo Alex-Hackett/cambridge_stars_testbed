@@ -124,7 +124,7 @@ C     array so that we can multiply this in later...
          IF (ERR.LT.EPS) nm = nm + 1
          nter = nter + kter
          dt = dtime(cpu)
-         tcpu = tcpu + dtPRINTA ( -2, NSTEP, ITER1, ITER2, NWRT5 )
+         tcpu = tcpu + dt
          IF (ERR.GT.EPS) kter = -kter
 C         write(61,99000) nm, kter, dt, dt/kter, nter, tcpu, tcpu/nter,
 C     &        tcpu/nm
