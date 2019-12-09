@@ -7,7 +7,7 @@ C Following is the main routine
       IMPLICIT REAL*8 (A-H,O-Z)
       SAVE
       PARAMETER (MAXMSH = 2000)
-      REAL MSUM
+*      REAL MSUM
       COMMON H(60,MAXMSH),DH(60,MAXMSH),EPS,V(2),NMESH,JIN,ID(100),IE(100)
       COMMON /EVMODE/ IMODE
       COMMON /SODDS / ALPHA, RML, CMG, CSI, CFE, CT(10), AGE, DT, M1, 
@@ -32,7 +32,7 @@ C Read physical data and an initial model
       npr = nm
       tcpu = dtime(cpu)
       tcpu = 0.0
-
+      IHAVEFLASH = 0
 C Begin evolutionary loop of NSTEP time steps
     2 IF (NM .EQ. NSTEP) GOTO 3
 
@@ -167,19 +167,20 @@ C Grab the Helium core mass from the printb routines
 C Compute the central degen param
       WF = DSQRT(1.0D0 + DEXP(H(1, NMESH)))
       PSICENTRAL = 2.0D0 * (WF - DLOG(WF + 1.0D0)) + H(1, NMESH)     
-C Check to see if the model is going through the helium flash
-      IF (((H(9, NMESH) + ZS).GT.(0.96D0)).AND.(PSICENTRAL.GT.6.D0).AND.
-     &   (DLDT.GT.1.D-4).AND.(COREMASS.GT.0)) THEN
-        WRITE (*,*) 'ENTERING HELIUM FLASH'
-        TARGETCOREMASS = COREMASS
+C Check to see if the model is going through the helium flash TODO
+*      IF (((H(9, NMESH) + ZS).GT.(0.96D0)).AND.(PSICENTRAL.GT.6.D0).AND.
+*     &   (DLDT.GT.1.D-4).AND.(COREMASS.GT.0).AND.(IHAVEFLASH.EQ.0)) THEN 
+*        WRITE (*,*) 'ENTERING HELIUM FLASH'
+*        IHAVEFLASH = 1
+*        TARGETCOREMASS = COREMASS
 *        CALL FORCEHEFLASH(TARGETCOREMASS, NMESH)
-        WRITE (*,*) 'EXITING HELIUM FLASH'
-      ENDIF  
+*        WRITE (*,*) 'EXITING HELIUM FLASH'
+*      ENDIF  
       
-      IF (VLE.GT.1.01D-10) THEN
-        WRITE(*,*) '!!!Core Helium Ignition Detected!!!'
-        GOTO 3
-      ENDIF
+*      IF (VLE.GT.1.01D-10) THEN
+*        WRITE(*,*) '!!!Core Helium Ignition Detected!!!'
+*        GOTO 3
+*      ENDIF
        
       
       

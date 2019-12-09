@@ -9,7 +9,8 @@ C post-Flash core He burning model
       INTEGER ISTORE(100)
       CHARACTER*200 FILENAMESTORE(20)
       CHARACTER*43 M3MODELDIR
-      
+      REAL*8 IZ_STORE(4), EP_STORE(3), ID_STORE(200), ISX_STORE(45),
+     :       CT_STORE(10) 
       SAVE
 C Required Common Blocks***********************************************
       
@@ -85,17 +86,102 @@ C Store a whole load of data variables
 C BY FAR the easiest way to get this to work is just to dump
 C the data into a temp-ish file, it'll be fine sure
 C Create the temp file
-      OPEN(UNIT=111,FILE='data_store_for_flash',ACCESS='sequential')
-      WRITE (111,99003) NH2,IT1,IT2,JIN,JOUT,NCH,JP,IZ,IMODE,
-     :ICL,ION,IAM,IOP,IBC,INUC,ICN,IML(1),IML(2),ISGTH,IMO,IDIFF,
-     :NT1,NT2,NT3,NT4,NT5,NSV,NMONT,
-     :EP,DT3,DD,ID,ISX,DT1,DT2,CT,ZS,ALPHA,CH,CC,CN,CO, 
-     :CNE,CMG,CSI,CFE,RCD,OS,RML,RMG,ECA,XF,DR,RMT,RHL,AC,AK1,AK2,ECT,
-     :TRB,
-     :IRAM, IRS1, VROT1, IRS2, VROT2, FMAC, FAM,
-     :IVMC, TRC1, IVMS, TRC2, MWTS, IAGB, ISGFAC, FACSGMIN, SGTHFAC,
-     :TENG, SMASS, FMASS, INJMD, STARTTIMEINJ, ENDTIMEINJ,
-     :ENDAGE
+*      OPEN(UNIT=111,FILE='data_store_for_flash',ACCESS='sequential')
+*      WRITE (111,*) NH2,IT1,IT2,JIN,JOUT,NCH,JP,IZ,IMODE,
+*     :ICL,ION,IAM,IOP,IBC,INUC,ICN,IML(1),IML(2),ISGTH,IMO,IDIFF,
+*     :NT1,NT2,NT3,NT4,NT5,NSV,NMONT,
+*     :EP,DT3,DD,ID,ISX,DT1,DT2,CT,ZS,ALPHA,CH,CC,CN,CO, 
+*     :CNE,CMG,CSI,CFE,RCD,OS,RML,RMG,ECA,XF,DR,RMT,RHL,AC,AK1,AK2,ECT,
+*     :TRB,
+*     :IRAM, IRS1, VROT1, IRS2, VROT2, FMAC, FAM,
+*     :IVMC, TRC1, IVMS, TRC2, MWTS, IAGB, ISGFAC, FACSGMIN, SGTHFAC,
+*     :TENG, SMASS, FMASS, INJMD, STARTTIMEINJ, ENDTIMEINJ,
+*     :ENDAGE
+      NH2_STORE = NH2
+      IT1_STORE = IT1
+      IT2_STORE = IT2
+      JIN_STORE = JIN
+      JOUT_STORE = JOUT
+      NCH_STORE = NCH
+      JP_STORE = JP
+      IZ_STORE = IZ
+      IMODE_STORE = IMODE
+      ICL_STORE = ICL
+      ION_STORE = ION
+      IAM_STORE = IAM
+      IOP_STORE = IOP
+      IBC_STORE = IBC
+      INUC_STORE = INUC
+      ICN_STORE = ICN
+      IML_STORE1 = IML(1)
+      IML_STORE2 = IML(2)
+      ISGTH_STORE = ISGTH
+      IMO_STORE = IMO
+      IDIFF_STORE = IDIFF
+      NT1_STORE = NT1
+      NT2_STORE = NT2
+      NT3_STORE = NT3
+      NT4_STORE = NT4
+      NT5_STORE = NT5
+      NSV_STORE = NSV
+      NMONT_STORE = NMONT
+      EP_STORE = EP
+      DT3_STORE = DT3
+      DD_STORE = DD
+      ID_STORE = ID
+      ISX_STORE = ISX
+      DT1_STORE = DT1
+      DT2_STORE = DT2
+      CT_STORE = CT
+      ZS_STORE = ZS
+      ALPHA_STORE = ALPHA
+      CH_STORE = CH
+      CC_STORE = CC
+      CN_STORE = CN
+      CO_STORE = CO
+      CNE_STORE = CNE
+      CMG_STORE = CMG
+      CSI_STORE = CSI
+      CFE_STORE = CFE
+      RCD_STORE = RCD
+      OS _STORE = OS
+      RML_STORE = RML
+      RMG_STORE = RMG
+      ECA_STORE = ECA
+      XF_STORE = XF
+      DR_STORE = DR
+      RMT_STORE = RMT
+      RHL_STORE = RHL
+      AC_STORE = AC
+      AK1_STORE = AK1
+      AK2_STORE = AK2
+      ECT_STORE = ECT
+      TRB_STORE = TRB
+      IRAM_STORE = IRAM
+      IRS1_STORE = IRS1
+      VROT1_STORE= VROT1
+      IRS2_STORE = IRS2
+      VROT2_STORE = VROT2
+      FMAC_STORE = FMAC
+      FAM_STORE = FAM
+      IVMC_STORE = IVMC
+      TRC1_STORE = TRC1
+      IVMS_STORE = IVMS
+      TRC2_STORE = TRC2
+      MWTS_STORE = MWTS
+      IAGB_STORE = IAGB
+      ISGFAC_STORE = ISGFAC
+      FACSGMIN_STORE = FACSGIM
+      SGTHFAC_STORE = SGTHFAC
+      TENG_STORE = TENG
+      SMASS_STORE = SMASS
+      FMASS_STORE = FMASS
+      INJMD_STORE = INJMD
+      STARTTIMEINJ_STORE = STARTTIMEINJ
+      ENDTIMEINJ_STORE = ENDTIMEINJ
+      ENDAGE_STORE = ENDAGE
+
+
 C Store the model
       DO j = 1,MAXMSH
         DO i = 1, 60
@@ -105,26 +191,30 @@ C Store the model
       
 C Store the nuke data
       DO j = 1, MAXMSH
-         DO i = 1, 100
+         DO i = 1, 50
             HNUCSTORE(i,j) = HNUC(i,j)
          ENDDO
       ENDDO
       DT = CSECYR * MDTY
-      
+
 C Now, need to read in the 3 solar mass for masslos, IEND = -2
       CALL PRINTA ( -2, NSTEP, ITER1, ITER2, NWRT5 )
+
 *      SM, DTY, AGE, PER, BMS, EC,NH,NP,NMOD,IB,PMH(1),PME(1)
       
 C Now, we have a standard evolution loop
       ITER = 100
-      NM = 0
-      NWRT5 = 0
-      
+      NMNEW = 0
+*      NWRT5 = 0
+      WRITE (*,*) NTIMESTEPS
       DO WHILE (NTTIMESTEPS.GT.0)
+         WRITE (*,*) 'WE"VE REACHED THE MASS LOSS'
          CALL SOLVER ( 1, ITER, KTER, ERR, ID, NWRT5 )
          CALL PRINTA ( 0, NSTEP, ITER1, ITER2, NWRT5 )
-         NTIMESTEPS = NTIMESTEPS - NM
-         IF (ERR.GT.EPS) WRITE (*,*) '!!Error Exceeded in massloss!! FIX THE DAMN CODE'
+         NMNEW = NMNEW + 1
+         ITER = ITER + 1
+         NTIMESTEPS = NTIMESTEPS - NMNEW
+         IF (ERR.NE.0) WRITE (*,*) '!!Error Exceeded in massloss!! FIX THE DAMN CODE'
 C TODO Now, need to retune the timestep, in case we failed to converge TODO
         
             
@@ -139,22 +229,22 @@ C Blank out the DH and DHNUC stuff to cancel out mass loss
             DH(i,j) = 0.D0
         ENDDO
       ENDDO
-      DO j=1,MAXMSH
-        DO i=1,100
-            DHNUC(i,j) = 0.D0
-        ENDDO
-      ENDDO
+*      DO j=1,MAXMSH
+*        DO i=1,100
+*            DHNUC(i,j) = 0.D0
+*        ENDDO
+*      ENDDO
       
 C Load in the core burning model 
       CALL PRINTA ( -3, NSTEP, ITER1, ITER2, NWRT5 )
       COREMASS = VMH
       DO WHILE ((COREMASS.LT.TARGETCOREMASS)
      &         .AND.(((TARGETCOREMASS - COREMASS)/TARGETCOREMASS).GT.1.D-3))
-         
+         WRITE (*,*) 'WE"VE REACHED THE CORE BURN'
          PREVCOREMASS = COREMASS
          CALL SOLVER ( 1, ITER, KTER, ERR, ID, NWRT5 )
          CALL PRINTA ( 0, NSTEP, ITER1, ITER2, NWRT5 )
-         IF (ERR.GT.EPS) WRITE (*,*) '!!Error Exceeded in core burn!! FIX THE DAMN CODE'
+         IF (ERR.NE.0) WRITE (*,*) '!!Error Exceeded in core burn!! FIX THE DAMN CODE'
          COREMASS = VMH
          TIMENEEDED = DT * (TARGETCOREMASS - COREMASS) / 
      &      (COREMASS - PREVCOREMASS)
@@ -182,19 +272,114 @@ C This bit copied wholesale from Ross, hope it works!
       ENDDO
       
 C Okay okay, restore everything from that datafile 
-      READ (111,99003) NH2,IT1,IT2,JIN,JOUT,NCH,JP,IZ,IMODE,
-     :ICL,ION,IAM,IOP,IBC,INUC,ICN,IML(1),IML(2),ISGTH,IMO,IDIFF,
-     :NT1,NT2,NT3,NT4,NT5,NSV,NMONT,
-     :EP,DT3,DD,ID,ISX,DT1,DT2,CT,ZS,ALPHA,CH,CC,CN,CO, 
-     :CNE,CMG,CSI,CFE,RCD,OS,RML,RMG,ECA,XF,DR,RMT,RHL,AC,AK1,AK2,ECT,
-     :TRB,
-     :IRAM, IRS1, VROT1, IRS2, VROT2, FMAC, FAM,
-     :IVMC, TRC1, IVMS, TRC2, MWTS, IAGB, ISGFAC, FACSGMIN, SGTHFAC,
-     :TENG, SMASS, FMASS, INJMD, STARTTIMEINJ, ENDTIMEINJ,
-     :ENDAGE
+*      READ (111,*) NH2,IT1,IT2,JIN,JOUT,NCH,JP,IZ,IMODE,
+*     :ICL,ION,IAM,IOP,IBC,INUC,ICN,IML(1),IML(2),ISGTH,IMO,IDIFF,
+*     :NT1,NT2,NT3,NT4,NT5,NSV,NMONT,
+*     :EP,DT3,DD,ID,ISX,DT1,DT2,CT,ZS,ALPHA,CH,CC,CN,CO, 
+*     :CNE,CMG,CSI,CFE,RCD,OS,RML,RMG,ECA,XF,DR,RMT,RHL,AC,AK1,AK2,ECT,
+*     :TRB,
+*     :IRAM, IRS1, VROT1, IRS2, VROT2, FMAC, FAM,
+*     :IVMC, TRC1, IVMS, TRC2, MWTS, IAGB, ISGFAC, FACSGMIN, SGTHFAC,
+*     :TENG, SMASS, FMASS, INJMD, STARTTIMEINJ, ENDTIMEINJ,
+*     :ENDAGE
 C and nuke the temp file
-      CLOSE(111,STATUS='DELETE')
+*      CLOSE(111,STATUS='DELETE')
+
+     
+
+C Idiot proofing -- otherwise the logic in solver will fail
+*      FACSGMIN = DMIN1(1d0, FACSGMIN)
       
+      NH2 = NH2_STORE
+      IT1 = IT1_STORE
+      IT2 = IT2_STORE
+      JIN = JIN_STORE
+      JOUT = JOUT_STORE
+      NCH = NCH_STORE
+      JP = JP_STORE
+      IZ = IZ_STORE
+      IMODE = IMODE_STORE
+      ICL = ICL_STORE
+      ION = ION_STORE
+      IAM = IAM_STORE
+      IOP = IOP_STORE
+      IBC = IBC_STORE
+      INUC = INUC_STORE
+      ICN = ICN_STORE
+      IML(1) = IML_STORE1
+      IML(2) = IML_STORE2
+      ISGTH = ISGTH_STORE
+      IMO = IMO_STORE
+      IDIFF = IDIFF_STORE
+      NT1 = NT1_STORE
+      NT2 = NT2_STORE
+      NT3 = NT3_STORE
+      NT4 = NT4_STORE
+      NT5 = NT5_STORE
+      NSV = NSV_STORE
+      NMONT = NMONT_STORE
+      EP = EP_STORE
+      DT3 = DT3_STORE
+      DD = DD_STORE
+      ID = ID_STORE
+      ISX = ISX_STORE
+      DT1 = DT1_STORE
+      DT2 = DT2_STORE
+      CT = CT_STORE
+      ZS = ZS_STORE
+      ALPHA = ALPHA_STORE
+      CH = CH_STORE
+      CC = CC_STORE
+      CN = CN_STORE
+      CO = CO_STORE
+      CNE = CNE_STORE
+      CMG = CMG_STORE
+      CSI = CSI_STORE
+      CFE = CFE_STORE
+      RCD = RCD_STORE
+      OS = OS_STORE
+      RML = RML_STORE
+      RMG = RMG_STORE
+      ECA = ECA_STORE
+      XF = XF_STORE
+      DR = DR_STORE
+      RMT = RMT_STORE
+      RHL = RHL_STORE
+      AC = AC_STORE
+      AK1 = AK1_STORE
+      AK2 = AK2_STORE
+      ECT = ECT_STORE
+      TRB = TRB_STORE
+      IRAM = IRAM_STORE
+      IRS1 = IRS1_STORE
+      VROT1= VROT1_STORE
+      IRS2 = IRS2_STORE
+      VROT2 = VROT2_STORE
+      FMAC = FMAC_STORE
+      FAM = FAM_STORE
+      IVMC = IVMC_STORE
+      TRC1 = TRC1_STORE
+      IVMS = IVMS_STORE
+      TRC2 = TRC2_STORE
+      MWTS = MWTS_STORE
+      IAGB = IAGB_STORE
+      ISGFAC = ISGFAC_STORE
+      FACSGMIN = FACSGIM_STORE
+      SGTHFAC = SGTHFAC_STORE
+      TENG = TENG_STORE
+      SMASS = SMASS_STORE
+      FMASS = FMASS_STORE
+      INJMD = INJMD_STORE
+      STARTTIMEINJ = STARTTIMEINJ_STORE
+      ENDTIMEINJ = ENDTIMEINJ_STORE
+      ENDAGE = ENDAGE_STORE
+      
+C Restore the nuke data
+      DO j = 1, MAXMSH
+         DO i = 1, 50
+            HNUC(i,j) = HNUCSTORE(i,j)
+         ENDDO
+      ENDDO      
             
       
       

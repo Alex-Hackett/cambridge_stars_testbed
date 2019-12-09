@@ -76,8 +76,10 @@ C Or just loading in our initial model?
 C Read opacity, nuclear reaction and neutrino loss rate data
       READ (11,'(I4)') NCSX
       READ (11,99004) CSX
-      DO 1 N = 1, NCSX
-    1    READ (11,99004) ((CS(JR,JT,N),JR=1,90),JT=1,127)
+      DO N = 1, NCSX
+         READ (11,99004) ((CS(JR,JT,N),JR=1,90),JT=1,127)
+*          READ (11,99004) ((CS(JR,JT,N),JR=1,121),JT=1,121)
+      ENDDO
       READ (11,99004) HAT
       READ (13,99004) RATEN
 C RJS 18/4/08 - read in spline coefficients for diffusion
@@ -340,12 +342,13 @@ C Read the core grow bit******
       CLOSE(102)
 C Read the 3 solar mass nucleosynthsis bit TODO
    44 CONTINUE
-*      OPEN(UNIT=103,FILE=FILENAMESTORE(4),ACCESS='sequential',STATUS='old')
-*      READ (103, 99005)
-*      DO K = 1, NH
-*         READ(103, 99002) (HNUC(J,K), J=1, 50)
-*      END DO
-*      CLOSE(103)   
+      OPEN(UNIT=103,FILE=FILENAMESTORE(4),ACCESS='sequential',STATUS='old')
+      READ (103, 99005)
+      DO K = 1, NH
+         READ(103, 99002) (HNUC(J,K), J=1, 50)
+      END DO
+      CLOSE(103)   
+      GOTO 33
 *************FINISHED THE HELIUM FLASH BIT*****************************
     
 C Convert some things to `cgs' units: 10**11 cm, 10**33 gm, 10**33 erg/s 
