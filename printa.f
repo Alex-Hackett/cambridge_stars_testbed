@@ -4,6 +4,7 @@
       real*8 MAT(4,141),Xcompos(3,305),COcompos(8)
       SAVE
       INTEGER MAXMSH
+          
       PARAMETER (MAXMSH = 2000)
       CHARACTER*128 FILENAMESTORE(20)
       COMMON /NUCMAT/ HNUC(100,MAXMSH), DHNUC(100,MAXMSH)
@@ -17,7 +18,7 @@
      :  EC, BM, ANG, CM, MTA, MTB, TM(2), T0, M0, TC(2), OS, AC, RCD,
      :  RMG, RHL, XF, DR, AK1 ,RMT, AK2, IZ(4), IB, ISX(45),
      :  TRB
-      COMMON /STAT1 / CSX(10), CS(90, 127, 10), HAT(23320), NCSX
+      COMMON /STAT1 / CSX(10), CS(90,127,10), HAT(23320), NCSX
       COMMON /OP    / ZS, LEDD, VM, GR, GRAD, ETH, RLF, EGR, R, QQ
       COMMON /ATDATA/ DH2(4), CHI(26,9), OMG(27), AM(10), BN(10), JZ(10)
       COMMON /NDATA / RATEN(9000)
@@ -78,9 +79,17 @@ C Read opacity, nuclear reaction and neutrino loss rate data
       READ (11,99004) CSX
       DO N = 1, NCSX
          READ (11,99004) ((CS(JR,JT,N),JR=1,90),JT=1,127)
-*          READ (11,99004) ((CS(JR,JT,N),JR=1,121),JT=1,121)
       ENDDO
       READ (11,99004) HAT
+C Old table read, file pointer in right place, now overwrite with
+C Ross's table
+      OPEN (UNIT=98, FILE='/data/ajh291/camstars_testbed/dat/phys02-v4.dat', ACCESS='SEQUENTIAL', STATUS='OLD')
+      READ (98, '(I4)') NCSX
+      READ (98, 99004) CSX
+      DO N = 1, NCSX
+        READ (98, 99004) ((CS(JR,JT,N),JR=1,121),JT=1,191)
+      ENDDO
+      CLOSE(98)
       READ (13,99004) RATEN
 C RJS 18/4/08 - read in spline coefficients for diffusion
 99006 FORMAT (E12.5,3(1X,E12.5))
@@ -175,7 +184,7 @@ C Convert RML from eta to coefficient required
       RML = 4d-13*RML
 *     
 * Create the spline interpolation data.
-*
+* 
       IF (IOP .EQ. 1) CALL OPSPLN
 !extra lines for COopac bit
       WRITE (*,*) '===================================================================================================='
