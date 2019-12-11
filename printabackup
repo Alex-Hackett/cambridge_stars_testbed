@@ -7,7 +7,6 @@
           
       PARAMETER (MAXMSH = 2000)
       CHARACTER*128 FILENAMESTORE(20)
-      CHARACTER*128 COtableNAME
       COMMON /NUCMAT/ HNUC(100,MAXMSH), DHNUC(100,MAXMSH)
       COMMON /PREVM / HPR(60,MAXMSH),DHPR(60,MAXMSH),PR(14),MS(9999),
      &                ST(9999),NPR,KPR, HPPR(60,MAXMSH),
@@ -19,7 +18,7 @@
      :  EC, BM, ANG, CM, MTA, MTB, TM(2), T0, M0, TC(2), OS, AC, RCD,
      :  RMG, RHL, XF, DR, AK1 ,RMT, AK2, IZ(4), IB, ISX(45),
      :  TRB
-      COMMON /STAT1 / CSX(10), CS(90,127,10), HAT(23320), NCSX
+      COMMON /STAT1 / CSX(10), CS(121,191,10), HAT(23320), NCSX
       COMMON /OP    / ZS, LEDD, VM, GR, GRAD, ETH, RLF, EGR, R, QQ
       COMMON /ATDATA/ DH2(4), CHI(26,9), OMG(27), AM(10), BN(10), JZ(10)
       COMMON /NDATA / RATEN(9000)
@@ -84,13 +83,13 @@ C Read opacity, nuclear reaction and neutrino loss rate data
       READ (11,99004) HAT
 C Old table read, file pointer in right place, now overwrite with
 C Ross's table
-C      OPEN (UNIT=98, FILE='/data/ajh291/camstars_testbed/dat/phys02-v4.dat', ACCESS='SEQUENTIAL', STATUS='OLD')
-C      READ (98, '(I4)') NCSX
-C      READ (98, 99004) CSX
-C      DO N = 1, NCSX
-C        READ (98, 99004) ((CS(JR,JT,N),JR=1,121),JT=1,191)
-C      ENDDO
-C      CLOSE(98)
+      OPEN (UNIT=98, FILE='/data/ajh291/camstars_testbed/dat/phys02-v4.dat', ACCESS='SEQUENTIAL', STATUS='OLD')
+      READ (98, '(I4)') NCSX
+      READ (98, 99004) CSX
+      DO N = 1, NCSX
+        READ (98, 99004) ((CS(JR,JT,N),JR=1,121),JT=1,191)
+      ENDDO
+      CLOSE (98)
       READ (13,99004) RATEN
 C RJS 18/4/08 - read in spline coefficients for diffusion
 99006 FORMAT (E12.5,3(1X,E12.5))
@@ -210,14 +209,6 @@ c     Setup format statements
 c     Load in CO tables and setup splines
          write(*,*) 'Reading in Variable tables and setting up splines'
 *         OPEN(10,FILE='COtables',STATUS='unknown',ACCESS='SEQUENTIAL')
-C Convert the metallicity to a string, so that we can read the
-C correct opacity table automatically, it's mad that this wasn't a thing before 5 and 6
-         WRITE (COtableNAME, '(F6.5)') ZS
-         COtableNAME = COtableNAME(2:6)
-         WRITE (*,*) 'Reading in CO Table: ', COtableNAME
-         COtableNAME = 'dat/COtables_z'//COtableNAME
-         OPEN (UNIT=10, FILE = COtableNAME, ACCESS = 'SEQUENTIAL'
-     :   ,STATUS = 'OLD', ERR=1001)
          do K=1,305
             read(10,99045) b3,b1,b2
 C            write (*,*) K,b3
@@ -225,7 +216,7 @@ C            write (*,*) K,b3
                read (10,99042) temp,(opacCO(1,1,I,J,K),J=1,31)
             enddo
          enddo
-         CLOSE(10)
+*         CLOSE(10)
          WRITE (*,*) '===================================================================================================='
 c     Bit to add in variable molecular bits from old paper in Marigo
 c     Setup composition matrix
@@ -668,11 +659,4 @@ C Sort out nucleosynthesis for restart
             END DO
       IHOLD = 0
       RETURN
-C I/O error handling
- 1001 WRITE (*,*) '!!Specified Metallicity Has No CO Opacity Table!!'
-      STOP
-      
-      
-      
-      
       END
