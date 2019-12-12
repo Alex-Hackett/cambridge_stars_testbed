@@ -60,10 +60,10 @@
       
 
       
-*99002 FORMAT (1X, 1P, 12E13.5, 0P)
+*99002 FORMAT (1X, 1P, 12E13.5, 0P) 33
 99002 FORMAT (1P, 50E15.8, 0P)
-99003 FORMAT (12I4,/,12I4,/,7I4,/,1P,5E8.1,0P,/,2(10I3,/,3(30I3,/)),3(15I
-     :3,/), 9F5.2, 1P, 3E8.1,
+99003 FORMAT (12I4,/,12I4,/,7I4,/,1P,5E8.1,0P,/,2(10I3,/,3(30I3,/)),34I
+     :3,/,11I3,/, 9F5.2, 1P, 3E8.1,
      :/, E9.2, 0P, 9F6.3, /, 1P, 2(7E9.2, /), 0P, I2, 2(I2,1X,E8.2),2(1X,F4.2)
      : ,/, I2,F6.1,I2,F6.1, 1X, F4.2, I2, I2, 2(1X, E8.2)
      : ,/, 3E14.6, I2, 2E14.6, /, E14.6)
@@ -129,18 +129,18 @@ C Idiot proofing -- otherwise the logic in solver will fail
 C Read data for initial model (often last model of previous run)
 C e.g. SM = stellar mass, solar units; DTY = next timestep, years	 
       READ  (30, 99005) SM, DTY, AGE, PER, BMS, EC,NH,NP,NMOD,IB,PMH(1),PME(1)
-      WRITE (32,99003) NH2,IT1,IT2,JIN,JOUT,NCH,JP,IZ,IMODE,
-     :ICL,ION,IAM,IOP,IBC,INUC,ICN,IML(1),IML(2), ISGTH, IMO, IDIFF,
-     :NT1,NT2,NT3,NT4,NT5,NSV,NMONT,
-     :EP,DT3,DD,ID,ISX,DT1,DT2,CT,ZS,ALPHA,CH,CC,CN,CO, 
-     :CNE,CMG,CSI,CFE,RCD,OS,RML,RMG,ECA,XF,DR,RMT,RHL,AC,AK1,AK2,ECT,
-     :TRB,
-     :IRAM, IRS1, VROT1, IRS2, VROT2, FMAC, FAM,
-     :IVMC, TRC1, IVMS, TRC2, MWTS, IAGB, ISGFAC, FACSGMIN, SGTHFAC,
-     :TENG, SMASS, FMASS, INJMD, STARTTIMEINJ, ENDTIMEINJ,
-     :ENDAGE
-      WRITE (32, 99005)
-      WRITE (32, 99005) SM, DTY, AGE, PER, BMS, EC,NH,NP,NMOD,IB,PMH(1),PME(1)
+!      WRITE (32,99003) NH2,IT1,IT2,JIN,JOUT,NCH,JP,IZ,IMODE,
+!     :ICL,ION,IAM,IOP,IBC,INUC,ICN,IML(1),IML(2), ISGTH, IMO, IDIFF,
+!     :NT1,NT2,NT3,NT4,NT5,NSV,NMONT,
+!     :EP,DT3,DD,ID,ISX,DT1,DT2,CT,ZS,ALPHA,CH,CC,CN,CO, 
+!     :CNE,CMG,CSI,CFE,RCD,OS,RML,RMG,ECA,XF,DR,RMT,RHL,AC,AK1,AK2,ECT,
+!     :TRB,
+!     :IRAM, IRS1, VROT1, IRS2, VROT2, FMAC, FAM,
+!     :IVMC, TRC1, IVMS, TRC2, MWTS, IAGB, ISGFAC, FACSGMIN, SGTHFAC,
+!     :TENG, SMASS, FMASS, INJMD, STARTTIMEINJ, ENDTIMEINJ,
+!     :ENDAGE
+!      WRITE (32, 99005)
+!      WRITE (32, 99005) SM, DTY, AGE, PER, BMS, EC,NH,NP,NMOD,IB,PMH(1),PME(1)
       
 C Print out some basic details about the run
       WRITE (*,*) '================================================================================================================================'
@@ -500,7 +500,7 @@ C Blank DHNUC each time
 C            DHNUC(J,K) = 0d0
          END DO
       END DO
-      write (32,*) "DELTA =",DELTA, " DD = ", DD
+!      write (32,*) "DELTA =",DELTA, " DD = ", DD
       DTF = DMIN1 (DT2, DD/DELTA)      
 C     IF ( IHOLD .LE. 3 ) DTF = 1.0D0
       IF ( IHOLD .LE. 2 ) DTF = 1.0D0
@@ -568,7 +568,7 @@ C      IF (DT1.EQ.1d0) GO TO 6
 C      IF (IDREDGE.EQ.3) GO TO 6      
       IF ( (JP.EQ.1 .AND. DTF.GE.DT1).OR.DTY.LT.6d-5 ) GO TO 6
 c clear DH in some circumstances
-      WRITE (32,*) "Clearing DH..."
+!      WRITE (32,*) "Clearing DH..."
       DO 7 K = 1, NH
          DO 7 J = 1, 60
     7       DH(J, K) = 0.0D0
