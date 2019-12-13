@@ -3,6 +3,7 @@
       IMPLICIT REAL*8(A-H, L, M, O-Z)
       SAVE
       INTEGER MAXMSH
+      INTEGER STARTYPE
       PARAMETER (MAXMSH = 2000)
       COMMON H(60,MAXMSH),DH(60,MAXMSH),EPS,DEL,DH0,NMESH,JIN,IW(200)
       COMMON /NUCMAT/ HNUC(100,MAXMSH), DHNUC(100,MAXMSH)
@@ -486,8 +487,8 @@ C      END IF
 10002    FORMAT (1P,E13.6,4E11.4,25E11.3,0P)
 *
 C Print the short summary, for every NWRT4'th model
-         IF (NWRT4.EQ.0) RETURN
-         IF (MOD(NMOD,NWRT4).NE.0) RETURN
+         !IF (NWRT4.EQ.0) RETURN
+         !IF (MOD(NMOD,NWRT4).NE.0) RETURN
          BMS = BM/MSUN
          IF (IMODE.EQ.1) THEN
             BM = BM - (WINDML(1)+FAKEWIND(1))*DT
@@ -581,6 +582,46 @@ C Update current values for extra timestep control variables
          VLCC(ISTAR) = VLC
          RLFC(ISTAR) = RLF
          TOTMC(ISTAR) = TM(ISTAR)
+         
+         
+!         
+!C Determine the "Star Type", according to Hurley et al
+!*       0 = MS Star M < 0.7, deeply or fully convective
+!        IF ((PX(9).LE.0.7D0).AND.((RENV(ISTAR)/RSUN).LE.(0.3D0*PX(17)))
+!     &      .AND.(VLH.GT.1.02D-10)) STARTYPE = 0
+!     
+!*       1 = MS star M > 0.7
+!        IF ((PX(9).GT.0.7D0).AND.(VLH.GT.1.02D-10)) STARTYPE = 1
+!        
+!*       2 = Star in the Hertzsprung Gap
+!*       Check if core exceeds Schonberg-Chandrasekar limit (Start of HG)
+!*       Then, check to see if core He burning has started (End of HG)
+!*       For an exceedingly simple approx, SCLIM = 0.13
+!        IF ((VMH.GE.0.13D0).AND.(VLE.LE.1.02D-10)) STARTYPE = 2
+!        
+!*       3 = First Giant Branch
+!*       Requirments: Burning H in a shell
+!        IF ((VLH.GE.1.01D-10).AND.(VMX(1).GE.
+!     &   (0.0001D0 * PX(9)))) STARTYPE = 3
+!        
+!*       4 = Core He Burn
+!*       Requirments, helium burns in core, hydrogen in shell
+!        IF ((STARTYPE.EQ.3).AND.(VLE.GT.1.02D-10)) STARTYPE = 4
+!        
+!        IF (STARTYPE.EQ.0) WRITE (*,*) 'Low Mass MS Star'
+!        IF (STARTYPE.EQ.1) WRITE (*,*) 'MS Star'
+!        IF (STARTYPE.EQ.2) WRITE (*,*) 'Hertzsprung Gap'
+!        IF (STARTYPE.EQ.3) WRITE (*,*) 'First Ascent of The Giant Branch'
+!        IF (STARTYPE.EQ.4) WRITE (*,*) 'Core Helium Burning' 
+!        
+!        
+!        
+        
+        
+        
+        
+        
+        
       END DO
       RETURN
       END

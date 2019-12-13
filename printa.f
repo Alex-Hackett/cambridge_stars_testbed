@@ -58,9 +58,19 @@
       DIMENSION WW(16),WX(52),DELDAT(22)
       data COcompos /0.0d0,0.01d0,0.03d0,0.1d0,0.2d0,0.4d0,0.6d0,1.0d0/
       
-
+C Common blocks for TZO stuff
+      COMMON /ITZO/ itzo_yn,itzo_cmass_pre, itzo_stripcorehe, itzo_stophighburn,
+     :          itzo_noneutburn, itzo_zerocore
+      COMMON /RTZO/ rtzo_mod_emass, rtzo_dcmassdt, rtzo_maxdt,
+     :          rtzo_cut_non_degen_hburn, rtzo_EC, rtzo_nucap,
+     :          rtzo_nucap_per_yr, rtzo_nucap_min, rtzo_degen_cutoff,
+     :          rtzo_degen_cutoff_per_yr, rtzo_degen_cutoff_max
+      COMMON /TZOSTUFF/ cmass
       
 *99002 FORMAT (1X, 1P, 12E13.5, 0P) 33
+99101 FORMAT (I4,/,I4,/,I4,/,I4,/,I4,/,I4)
+99102 FORMAT (E14.6,/,E14.6,/,E14.6,/,E14.6,/,E14.6,/,E14.6,/,
+     :        E14.6,/,E14.6,/,E14.6,/,E14.6,/,E14.6)
 99002 FORMAT (1P, 50E15.8, 0P)
 99003 FORMAT (12I4,/,12I4,/,7I4,/,1P,5E8.1,0P,/,2(10I3,/,3(30I3,/)),34I
      :3,/,11I3,/, 9F5.2, 1P, 3E8.1,
@@ -123,6 +133,16 @@ C Read miscellaneous data, usually unchanged during one evol run
      :TENG, SMASS, FMASS, INJMD, STARTTIMEINJ, ENDTIMEINJ,
      :ENDAGE
      
+C Read the TZO Control data
+      OPEN (UNIT=70, FILE='tzo_data', ACCESS='SEQUENTIAL', STATUS='OLD')
+      READ (70, 99101) itzo_yn,itzo_cmass_pre, itzo_stripcorehe, itzo_stophighburn,
+     :          itzo_noneutburn, itzo_zerocore
+      READ (70, 99102) rtzo_mod_emass, rtzo_dcmassdt, rtzo_maxdt,
+     :          rtzo_cut_non_degen_hburn, rtzo_EC, rtzo_nucap,
+     :          rtzo_nucap_per_yr, rtzo_nucap_min, rtzo_degen_cutoff,
+     :          rtzo_degen_cutoff_per_yr, rtzo_degen_cutoff_max
+      CLOSE (70)
+
 
 C Idiot proofing -- otherwise the logic in solver will fail
       FACSGMIN = DMIN1(1d0, FACSGMIN)
@@ -578,6 +598,29 @@ C Does this still work???
       IF (ICN .EQ. 1) DT = MSUN*MSUN*CSECYR*5D0*TKH(ISTAR)/(VM*VM)
       IF (ICN .EQ. 1) RMG = CLN10/(DT*2D2)
       CALL COMPOS
+      
+C TZO Stuff
+!      OPEN (UNIT=70, FILE='tzo_data', ACCESS='SEQUENTIAL', STATUS='OLD')
+!      READ (70, 99101) itzo_yn,itzo_cmass_pre, itzo_stripcorehe, itzo_stophighburn,
+!     :          itzo_noneutburn, itzo_zerocore
+!      READ (70, 99102) rtzo_mod_emass, rtzo_dcmassdt, rtzo_maxdt,
+!     :          rtzo_cut_non_degen_hburn, rtzo_EC, rtzo_nucap,
+!     :          rtzo_nucap_per_yr, rtzo_nucap_min, rtzo_degen_cutoff,
+!     :          rtzo_degen_cutoff_per_yr, rtzo_degen_cutoff_max
+!      CLOSE (70)
+* Modify TZO modified electron mass bit
+      IF (itzo_yn.EQ.1) THEN
+        dlcm = rtzo_dcmassdt * DTY
+        cm = MIN(rtzo_mod_emass * (1.D0 + dlcm), 1839.D0)
+        rtzo_mod_emass = cm
+        
+* modify degeneracy param that we switch to neutronic material at
+        rtzo_degen_cutoff = MIN(rtzo_degen_cutoff + 
+     &      DTY*rtzo_degen_cutoff_per_yr, rtzo_degen_cutoff_max)
+      ENDIF
+      
+      
+      
 c For *2, some factors relating to accretion from *1. Ignored if this is *1
  40   CONTINUE
 C   40 T0 = CSECYR*ST(KS+1)

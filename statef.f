@@ -17,6 +17,17 @@
       COMMON /IONISE/ NSTORE(8,5), NSTORE2(5)
       COMMON /OPDAT / cbase,obase,opT(141),opR(31),ZS
       FXP(VX) = DEXP(MAX(-50.0D0,MIN(50.0D0,VX)))
+      
+C Common blocks for TZO stuff
+      COMMON /ITZO/ itzo_yn, itzo_cmass_pre, itzo_stripcorehe, itzo_stophighburn,
+     :          itzo_noneutburn, itzo_zerocore
+      COMMON /RTZO/ rtzo_mod_emass, rtzo_dcmassdt, rtzo_maxdt,
+     :          rtzo_cut_non_degen_hburn, rtzo_EC, rtzo_nucap,
+     :          rtzo_nucap_per_yr, rtzo_nucap_min, rtzo_degen_cutoff,
+     :          rtzo_degen_cutoff_per_yr, rtzo_degen_cutoff_max
+      COMMON /TZOSTUFF/ cmass
+      
+      
       DIMENSION HA(26), VA(26), tkappa(2,2),Xcompos(5),COcompos(8)
       data Xcompos /0.0d0,0.03d0,0.1d0,0.35d0,0.7d0/
       data COcompos /0.0d0,0.01d0,0.03d0,0.1d0,0.2d0,0.4d0,0.6d0,1.0d0/
@@ -29,7 +40,30 @@
       UF = F/(1.0+F)
       WF = SQRT(1.0+F)
       PSI = FL + 2.0*(WF-LOG(1.0+WF))
-      G = CT*T*WF
+      
+C TZO based on Ross Church's implementation of Cannon's ficticious
+C     electron mass modification
+      CD_1 = CD
+      CB_1 = CB
+      CT_1 = CT
+      
+      IF (itzo_yn.EQ.1) THEN
+        PSIF = MIN(PSI, 50.D0)
+        IF (itzo_cmass_pre.EQ.0) THEN
+            elec_fict_mass = rtzo_mod_emass
+        ELSE IF (itzo_cmass_pre.EQ.1) THEN
+            elec_fict_mass = MIN(rtzo_mod_emass, MAX(1.D0, EXP(PSIF-rtzo_degen_cutoff)))
+        ENDIF
+        
+        CD_1 = CD * elec_fict_mass**3.D0
+        CB_1 = CB * elec_fict_mass**4.D0
+        CT_1 = CT / elec_fict_mass
+        
+      ENDIF   
+      
+      
+      
+      G = CT_1*T*WF
       CALL FDIRAC(F, G)
       PE = G*PE
       PET = PET + 1.0
@@ -38,7 +72,7 @@
       SE = QE + 2.0*WF - PSI
       SEF = QE*(QEF-REF-0.5*UF) - 1.0/WF
       SET = QE*(QET-RET)
-      UE = SE + PSI - PE/(RE*CT*T)
+      UE = SE + PSI - PE/(RE*CT_1*T)
 * Some quantities that do not depend on the state of ionization:
 * the NA are the element number densities (per baryon); AVM is the average
 * mass per baryon (in amu); NEO and NIO are the numbers of electrons and
@@ -59,7 +93,7 @@
 * chemical potential, pressure, entropy and internal energy.
 * TI is 1eV/kT, DE is 1 amu * number of electrons/cm3
       TI = CEVB/T
-      DE = RE*CD
+      DE = RE*CD_1
       CALL PRESSI(ICL, TI, DE, REF, RET, F, DC, DVT, DVF, DPA, DPAT,
      &     DPAF, DSA, DSAT, DSAF, DUA)
       DV = DC - PSI
@@ -173,6 +207,15 @@
       DB = EN*DE
       DL = LOG(DB)
       RHO = DB*AVM
+      
+C TZO, increasing density if we have only neutrons here!!
+      IF (itzo_yn.EQ.1) THEN
+        IF (rtzo_mod_emass.GT.1.D0) THEN
+            RHO = DB*AVM/(1.D0 + (elec_fict_mass - 1.D0)/(rtzo_mod_emass - 1.D0))
+        ELSE
+            RHO = DB * AVM
+        ENDIF
+      ENDIF
       RL = LOG(RHO)
       RT = RET - EN*NET
       RF = REF - EN*NEF
@@ -181,7 +224,7 @@
       CALL PRESSI(0, TI, DE, RF, RT, F, DC, DVT, DVF, DPB, DPBT, DPBF, 
      :            DSB, DSBT, DSBF, DUB)
 * pressure terms
-      PE = CB*PE
+      PE = CB_1*PE
       TCR = T*CR
       P0 = TCR*DB
       PI = NI*P0
