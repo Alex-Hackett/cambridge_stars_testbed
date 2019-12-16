@@ -1,11 +1,10 @@
 **==OPSPLN.FOR
       SUBROUTINE OPSPLN
       IMPLICIT REAL*8 (A-H,N-Z)
-      PARAMETER (MT = 127,MR = 90)
+      PARAMETER (MT = 191,MR = 121)
       REAL*8 MAT(4,MT)
-      COMMON /STAT1 / CSX(10), CS(90,127,10), CNIU(60,41,2), W(18400), 
-     :                JCSX
-      COMMON /STAT3/ FSPL(4,4,127,90,10),TFM(127),FRM(90),
+      COMMON /STAT1 / CSX(10), CS(121,191,10), CNIU(60,41,2), W(18400)
+      COMMON /STAT3/ FSPL(4,4,191,121,10),TFM(191),FRM(121),
      :                FKLM(6),FKHM(6)
 *
 * Calculate a bicubic spline interpolation fit for the temperature
@@ -13,10 +12,10 @@
 * Splines, D. McCune found by L. Dray.
 *
       DO 10 JT = 1,MT
-      TFM(JT) = 2.95D0 + 0.05D0*DFLOAT(JT)
+      TFM(JT) = 3.D0 + 0.05D0*DFLOAT(JT -1)
    10 CONTINUE
       DO 20 JR = 1,MR
-      FRM(JR) = 0.25D0*DFLOAT(JR) - 12.25D0
+      FRM(JR) = 0.25D0*DFLOAT(JR - 1) - 12.D0
    20 CONTINUE
       IFAIL = 0
       DO 30 JX = 1,10

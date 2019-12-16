@@ -22,6 +22,16 @@ C Following is the main routine
       COMMON /OP    / ZS, LEDD, VM, GR, GRAD, ETH, RLF, EGR, R, QQ
       COMMON /YUK1  / PX(34), WMH, WMHE, VMH, VME, VMC, VMG, BE, VLH,
      :                VLE, VLC, VLN, VLT, MCB(12),WWW(100)
+     
+C Common blocks for TZO stuff
+      COMMON /ITZO/ itzo_yn, itzo_cmass_pre, itzo_stripcorehe, itzo_stophighburn,
+     :          itzo_noneutburn, itzo_zerocore
+      COMMON /RTZO/ rtzo_mod_emass, rtzo_dcmassdt, rtzo_maxdt,
+     :          rtzo_cut_non_degen_hburn, rtzo_EC, rtzo_nucap,
+     :          rtzo_nucap_per_yr, rtzo_nucap_min, rtzo_degen_cutoff,
+     :          rtzo_degen_cutoff_per_yr, rtzo_degen_cutoff_max
+      COMMON /TZOSTUFF/ cmass
+      
       real dtime,cpu(2),dt,tcpu
 C Read physical data and an initial model
       CALL PRINTA ( -1, NSTEP, ITER1, ITER2, NWRT5 )
@@ -181,6 +191,11 @@ C Check to see if the model is going through the helium flash TODO
 *        WRITE(*,*) '!!!Core Helium Ignition Detected!!!'
 *        GOTO 3
 *      ENDIF
+      IF (VMH.GE.0.2D0 .AND. iexhaust.EQ.0) THEN
+      iexhaust = 1
+      WRITE (*,*) '!!! 0.2 Solar Mass Exhausted Core Reached !!!'
+      itzo_yn = 1
+      ENDIF
        
       
       

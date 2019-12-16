@@ -6,7 +6,7 @@ C RJS 14/8/03 - funcs2 compatible version of nucrat.f
       IMPLICIT REAL*8(A-H, N-Z)
       COMMON /AUXIN / ICL, ION, JW, IOP, INUC, IBC, ICN, IML(2), ISGTH,
      :     IMO, IDIFF
-      COMMON /STAT1 / CAT(119230), CRT(200, 92), JCSX
+      COMMON /STAT1 / CAT(236040), CRT(200, 92)
       COMMON /STAT2 / W1(4), RHO, W2(4), ZT, W3(8), 
      :                RRT(21), EX, ENX, EXH, EXHE, EXC, WR(16)
       COMMON /ABUND / XA(10), N(10),

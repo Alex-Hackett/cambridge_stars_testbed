@@ -1,10 +1,9 @@
 **==OPACTY.FOR
       SUBROUTINE OPACTY (JX,TF,FR,FKL,FKH)
       IMPLICIT REAL*8 (A-H,N-Z)
-      PARAMETER (MT = 127,MR = 90)
-      COMMON /STAT1 / CSX(10), CS(90,127,10), CNIU(60,41,2), W(18400),
-     :                JCSX
-      COMMON /STAT3 / F(4,4,127,90,10),TFM(127),FRM(90),
+      PARAMETER (MT = 191,MR = 121)
+      COMMON /STAT1 / CSX(10), CS(121,191,10), CNIU(60,41,2), W(18400)
+      COMMON /STAT3 / F(4,4,191,121,10),TFM(191),FRM(121),
      :                FKLM(6),FKHM(6)
       SAVE
 *
@@ -25,8 +24,12 @@
 *
 * Find interval in which target point lies.
 *
+C Debug, check for integer overflow
+        
          I = 1 + (MT-1)*(TF-TFM(1))/(TFM(MT)-TFM(1))
          J = 1 + (MR-1)*(FR-FRM(1))/(FRM(MR)-FRM(1))
+         !WRITE (*,*) MT, TF, TFM(1), TFM(MT)
+
          DT = TF-TFM(I)
          DR = FR-FRM(J)
 *

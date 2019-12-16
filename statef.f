@@ -6,7 +6,7 @@
       REAL*8 KNEUT,WNEUT,NP,NN,W1,MUE
       COMMON /AUXIN / ICL, ION, JW, IOP, INUC, IBC, ICN, IML(2), ISGTH,
      :     IMO, IDIFF
-      COMMON /STAT1 / CSX(10), CS(90,127,10), CNIU(60,41,2), W(18400), 
+      COMMON /STAT1 / CSX(10), CS(121,191,10), CNIU(60,41,2), W(18400), 
      :                JCSX
       COMMON /STAT2 / PL, RL, U, P, RHO, FK, T, SF, ST, ZT, GRADA, CP, 
      :                CH, S, PR, PG, PF, PT, EN, WR(41)
