@@ -540,6 +540,14 @@ C Trying this again, we need to reduce the timestep while we're injecting energy
             ENDIF
          ENDIF
          
+C TZO, max timestep
+         IF (itzo_yn.EQ.1) THEN
+            IF (DTF*DTY.GT.rtzo_maxdt) THEN
+                DTF = rtzo_maxdt / DTY
+                DTY = DTF*DTY
+            ENDIF
+         ENDIF
+         
          
          
          
@@ -619,6 +627,26 @@ C TZO Stuff
      &      DTY*rtzo_degen_cutoff_per_yr, rtzo_degen_cutoff_max)
       ENDIF
       
+C TZO stuff, need to zero out compositions in the "core"
+      IF (itzo_yn.EQ.1) THEN
+        IF (itzo_zerocore.EQ.1) THEN
+            MCORE = VMH + VME
+            OLDMCORE = MCORE
+            DO JJ = 1, NH
+                J = NH + 1 - JJ
+                XM = DEXP(H(4,J))
+                
+                IF (XM.LT.MCORE) THEN
+                    H(5,J) = 0.D0 ! Zero H
+                    H(9,J) = 0.D0 ! Zero He
+                    H(10,J) = 0.D0 ! Zero C12
+                ELSE IF ((H(5,J) + H(9,J) + H(10,J)).EQ.0.D0) THEN
+                    MCORE = XM
+                ENDIF
+            ENDDO
+
+        ENDIF
+      ENDIF
       
       
 c For *2, some factors relating to accretion from *1. Ignored if this is *1

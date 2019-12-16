@@ -2,6 +2,8 @@
       SUBROUTINE STATEF(FL, TL)
       IMPLICIT REAL*8(A-H, N-Z)
       PARAMETER (EPS=1.0D-30)
+      REAL*8 REALTL, REALFL
+      REAL*8 KNEUT,WNEUT,NP,NN,W1,MUE
       COMMON /AUXIN / ICL, ION, JW, IOP, INUC, IBC, ICN, IML(2), ISGTH,
      :     IMO, IDIFF
       COMMON /STAT1 / CSX(10), CS(90,127,10), CNIU(60,41,2), W(18400), 
@@ -373,6 +375,37 @@ C about right though and that's the important one
          ELSE
             XT = (XF-CSX(JX))/(CSX(JX+1)-CSX(JX))
             XU = 1.0 - XT
+            
+C TZO STUFF Weight Opacities with the neutron rich opacity routine
+C Common blocks for TZO stuff
+!      COMMON /ITZO/ itzo_yn, itzo_cmass_pre, itzo_stripcorehe, itzo_stophighburn,
+!     :          itzo_noneutburn, itzo_zerocore
+!      COMMON /RTZO/ rtzo_mod_emass, rtzo_dcmassdt, rtzo_maxdt,
+!     :          rtzo_cut_non_degen_hburn, rtzo_EC, rtzo_nucap,
+!     :          rtzo_nucap_per_yr, rtzo_nucap_min, rtzo_degen_cutoff,
+!     :          rtzo_degen_cutoff_per_yr, rtzo_degen_cutoff_max
+!      COMMON /TZOSTUFF/ cmass
+
+            IF (itzo_yn.EQ.1) THEN
+                IF (elec_fict_mass.EQ.1.D0) THEN ! Normal Region
+                    WNEUT = 0.D0
+                    KNEUT = 1.D0
+                ELSE IF (elec_fict_mass.LT.itzo_cmass_pre) THEN ! Transition Region
+                    CALL TZO_NEUTRON(RHO, T, NP, NN, W1, KNEUT)
+                    IF (NN.GT.0.D0) THEN
+                        WNEUT = (elec_fict_mass - 1.D0)/(itzo_cmass_pre-1.D0)
+                    ELSE
+                        WNEUT = 0.D0
+                    ENDIF
+                ELSE ! Pure Neutron Region
+                    CALL TZO_NEUTRON(RHO, T, NP, NN, W1, FK)
+                    GOTO 100
+                ENDIF
+                WELEC = 1.D0 - WNEUT
+            ENDIF
+            
+            
+            
             IF (IOP.EQ.0) THEN
 *     linear interpolation in opacity table
                TT = 20.0*(TF - 2.95)
@@ -397,6 +430,10 @@ C about right though and that's the important one
                CALL OPACTY(JX,TF,FR,FKL,FKH)
             END IF
             FK = XT*10D0**FKH + XU*10D0**FKL
+            IF (itzo_yn.EQ.1) THEN
+                FK = DEXP(WELEC * LOG(FK) + WNEUT*LOG(KNEUT))
+            ENDIF
+  100       CONTINUE
             CH = 4D0*CC*PR/(FK*RHO*RHO*CP*T)
 *     Neutrino loss rates from Itoh et al (1983-1992)
             EN = 0.0

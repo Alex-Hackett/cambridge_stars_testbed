@@ -239,6 +239,12 @@ C Is this line still necessary?
          END IF
          DO K = 1, NMESH
             H(6+15*(ISTAR-1), K) = 1.0D0/Q2
+            IF (itzo_yn.EQ.1) THEN ! TZO Strip He, put in C
+                IF (K.GT.itzo_stripcorehe) THEN
+                    H(10,K) = H(10,K) + H(9,K)
+                    H(9,K) = 0.D0
+                ENDIF
+            ENDIF
          END DO
       END DO
       RETURN

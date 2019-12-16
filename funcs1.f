@@ -54,6 +54,15 @@ C rest of this subroutine. RJS 5/7/06
 *     Final Common for the mass-based artificial energy
 *      REAL TENG, SMASS, FMASS
       COMMON /ARTENG/ TENG, SMASS, FMASS, SHIENG, INJMD
+C Common blocks for TZO stuff
+      COMMON /ITZO/ itzo_yn, itzo_cmass_pre, itzo_stripcorehe, itzo_stophighburn,
+     :          itzo_noneutburn, itzo_zerocore
+      COMMON /RTZO/ rtzo_mod_emass, rtzo_dcmassdt, rtzo_maxdt,
+     :          rtzo_cut_non_degen_hburn, rtzo_EC, rtzo_nucap,
+     :          rtzo_nucap_per_yr, rtzo_nucap_min, rtzo_degen_cutoff,
+     :          rtzo_degen_cutoff_per_yr, rtzo_degen_cutoff_max
+      COMMON /TZOSTUFF/ cmass
+      
       
       DIMENSION XSPEC(6), DDMIX(10), MUXX(6)
       CBRT(VX) = DEXP(DLOG(VX)/3.0D0)

@@ -13,6 +13,19 @@
       COMMON /CNSTS / CPI, PI4, CLN10, CDUM(9), CPL, CMEVMU, CDUM2(5)
       COMMON /NCDATA/ QRT(20), QNT(20), CZA(91), CZB(91), CZC(91),
      &                CZD(91), VZ(10)
+      COMMON /YUK1  / PX(34), WMH, WMHE, VMH, VME, VMC, VMG, BE, VLH,
+     :                VLE, VLC, VLN, VLT, MCB(12),WWW(100)
+     
+C Common blocks for TZO stuff
+      COMMON /ITZO/ itzo_yn, itzo_cmass_pre, itzo_stripcorehe, itzo_stophighburn,
+     :          itzo_noneutburn, itzo_zerocore
+      COMMON /RTZO/ rtzo_mod_emass, rtzo_dcmassdt, rtzo_maxdt,
+     :          rtzo_cut_non_degen_hburn, rtzo_EC, rtzo_nucap,
+     :          rtzo_nucap_per_yr, rtzo_nucap_min, rtzo_degen_cutoff,
+     :          rtzo_degen_cutoff_per_yr, rtzo_degen_cutoff_max
+      COMMON /TZOSTUFF/ cmass
+      
+     
       dimension czw(20)
       CBRT(VX) = DEXP(DLOG(VX)/3.0D0)
       DATA CSA, CSB, CSC, CSD, CXD /0.624, 0.316, 0.460, 0.38, 0.86/
@@ -191,5 +204,14 @@ C      ENX = QNPP*RPP
       END DO
       EX = CMEVMU*EX/AVM
       ENX = -CMEVMU*ENX/AVM
+C TZO mess shuts off energy generation by nuke burn in the neutron regions      
+      IF (itzo_yn.EQ.1) THEN
+        IF (itzo_noneutburn.EQ.1 .AND.
+     &    PX(1).GT.rtzo_degen_cutoff+4.D0 .AND. itzo_cmass_pre.EQ.1) THEN
+            IF (EX.NE.0.D0) THEN
+                EX = 0.D0
+            ENDIF
+        ENDIF
+      ENDIF
       RETURN
       END
