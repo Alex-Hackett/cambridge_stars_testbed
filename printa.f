@@ -460,7 +460,7 @@ C      DO 16 J = 1,13
 C   16    PR(J) = CT(J+10)
       NPR = NMOD
       KPR = KS
-      GO TO 40
+      GOTO 40
 C Almost end of initial input section. Start of regular update section
    30 IF ( IEND.NE.0 ) GO TO 31
       CALL COMPOS
@@ -666,6 +666,28 @@ C End of regular update section. Intermediate or final output section
       BMS = (SM + SM2) !BM/MSUN
       IF (IMODE.EQ.1) BMS = BM/MSUN
       DTY = DT/CSECYR
+      
+C Restart bit!!      
+      OPEN (UNIT=134,FILE='modin_last',ACCESS='SEQUENTIAL',STATUS='REPLACE')
+      WRITE (134, 99005) SM, DTY, AGE, PER, BMS, EC,NH,NP,NMOD,IB,PMH(1),PME(1)
+      DO K = 1, NH
+        WRITE (134, 99002) (H(J,K), J = 1, 15)
+      ENDDO  
+      DO K = 1,NH
+        WRITE (134, 99002) (DH(J,K), J=1, 15)
+      ENDDO
+      FLUSH (134)
+      CLOSE (134)
+      
+      OPEN (UNIT=135,FILE='nucmodin_last',ACCESS='SEQUENTIAL',STATUS='REPLACE')
+      WRITE (135, 99005) SM, DTY, AGE, PER, BMS, EC,NH,NP,NMOD,IB,PMH(1),PME(1)
+      DO K = 1, NH
+         WRITE (135, 99002) (HNUC(J,K),J=1,50)
+      END DO
+      FLUSH (135)
+      CLOSE (135)
+C=====================================================================       
+      
       WRITE (34, 99005) SM, DTY, AGE, PER, BMS, EC,NH,NP,NMOD,IB,PMH(1),PME(1)
       DO K = 1, NH
 C Need to do this better - at present I'm writing out blanks

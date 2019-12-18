@@ -178,24 +178,25 @@ C Compute the central degen param
       WF = DSQRT(1.0D0 + DEXP(H(1, NMESH)))
       PSICENTRAL = 2.0D0 * (WF - DLOG(WF + 1.0D0)) + H(1, NMESH)     
 C Check to see if the model is going through the helium flash TODO
-*      IF (((H(9, NMESH) + ZS).GT.(0.96D0)).AND.(PSICENTRAL.GT.6.D0).AND.
-*     &   (DLDT.GT.1.D-4).AND.(COREMASS.GT.0).AND.(IHAVEFLASH.EQ.0)) THEN 
-*        WRITE (*,*) 'ENTERING HELIUM FLASH'
-*        IHAVEFLASH = 1
-*        TARGETCOREMASS = COREMASS
-*        CALL FORCEHEFLASH(TARGETCOREMASS, NMESH)
-*        WRITE (*,*) 'EXITING HELIUM FLASH'
-*      ENDIF  
+!      IF (((H(9, NMESH) + ZS).GT.(0.96D0)).AND.(PSICENTRAL.GT.6.D0).AND.
+!     &   (DLDT.GT.1.D-4).AND.(COREMASS.GT.0).AND.(IHAVEFLASH.EQ.0)) THEN 
+!        WRITE (*,*) 'ENTERING HELIUM FLASH'
+!        IHAVEFLASH = 1
+!        TARGETCOREMASS = COREMASS
+!        CALL FORCEHEFLASH(TARGETCOREMASS, NMESH)
+!        WRITE (*,*) 'EXITING HELIUM FLASH'
+!      ENDIF  
       
-*      IF (VLE.GT.1.01D-10) THEN
-*        WRITE(*,*) '!!!Core Helium Ignition Detected!!!'
-*        GOTO 3
-*      ENDIF
-      IF (VMH.GE.0.2D0 .AND. iexhaust.EQ.0) THEN
-      iexhaust = 1
-      WRITE (*,*) '!!! 0.2 Solar Mass Exhausted Core Reached !!!'
-      itzo_yn = 1
-      ENDIF
+!      IF (VLE.GT.1.00D-05) THEN
+!        WRITE(*,*) '!!!Core Helium Ignition Detected!!!'
+!        GOTO 3
+!      ENDIF
+!      IF (VMH.GE.0.2D0 .AND. iexhaust.EQ.0) THEN
+!      iexhaust = 1
+!      WRITE (*,*) '!!! 0.2 Solar Mass Exhausted Core Reached !!!'
+!      !itzo_yn = 1
+!      GOTO 3
+!      ENDIF
        
       
       
