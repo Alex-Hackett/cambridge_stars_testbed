@@ -32,6 +32,7 @@ C Debug, check for integer overflow
 
          DT = TF-TFM(I)
          DR = FR-FRM(J)
+*         WRITE (*,*) 'FRM(J), FR, DR', FRM(J), FR, DR         
 *
 * Evaluate the splines.
 *

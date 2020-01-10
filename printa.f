@@ -42,7 +42,8 @@
       COMMON /ARTENG/ TENG, SMASS, FMASS, SHIENG, INJMD
       COMMON /INJTIMECTRL/ STARTTIMEINJ, ENDTIMEINJ
       COMMON /AGECTRL/ ENDAGE
-
+      COMMON /MASSCTRL/ MINMASS, MAXMASS
+      SAVE
 * Extra COMMON for main-sequence evolution.
 *     
       COMMON /FLASHSTORE/ SM, NM
@@ -76,7 +77,7 @@ C Common blocks for TZO stuff
      :3,/,11I3,/, 9F5.2, 1P, 3E8.1,
      :/, E9.2, 0P, 9F6.3, /, 1P, 2(7E9.2, /), 0P, I2, 2(I2,1X,E8.2),2(1X,F4.2)
      : ,/, I2,F6.1,I2,F6.1, 1X, F4.2, I2, I2, 2(1X, E8.2)
-     : ,/, 3E14.6, I2, 2E14.6, /, E14.6)
+     : ,/, 3E14.6, I2, 2E14.6, /, E14.6, /, E14.6, E14.6)
 99004 FORMAT (1X, 10F7.3)
 99005 FORMAT (1X, 1P, 2E14.6, E17.9, 3E14.6, 0P, 4I6, 1P, 2E11.3)
 C Are we loading in a Helium flash model?
@@ -94,7 +95,7 @@ C Read opacity, nuclear reaction and neutrino loss rate data
       READ (11,99004) HAT
 C Old table read, file pointer in right place, now overwrite with
 C Ross's table
-      OPEN (UNIT=98, FILE='/data/ajh291/camstars_testbed/dat/phys02-v4.dat', ACCESS='SEQUENTIAL', STATUS='OLD')
+      OPEN (UNIT=98, FILE='dat/phys02-v4.dat', ACCESS='SEQUENTIAL', STATUS='OLD')
       READ (98, '(I4)') NCSX
       READ (98, 99004) CSX
       DO N = 1, NCSX
@@ -131,17 +132,18 @@ C Read miscellaneous data, usually unchanged during one evol run
      :IRAM, IRS1, VROT1, IRS2, VROT2, FMAC, FAM,
      :IVMC, TRC1, IVMS, TRC2, MWTS, IAGB, ISGFAC, FACSGMIN, SGTHFAC,
      :TENG, SMASS, FMASS, INJMD, STARTTIMEINJ, ENDTIMEINJ,
-     :ENDAGE
+     :ENDAGE,
+     :MINMASS, MAXMASS
      
 C Read the TZO Control data
-      OPEN (UNIT=70, FILE='tzo_data', ACCESS='SEQUENTIAL', STATUS='OLD')
+      !OPEN (UNIT=70, FILE='tzo_data', ACCESS='SEQUENTIAL', STATUS='OLD')
       READ (70, 99101) itzo_yn,itzo_cmass_pre, itzo_stripcorehe, itzo_stophighburn,
      :          itzo_noneutburn, itzo_zerocore
       READ (70, 99102) rtzo_mod_emass, rtzo_dcmassdt, rtzo_maxdt,
      :          rtzo_cut_non_degen_hburn, rtzo_EC, rtzo_nucap,
      :          rtzo_nucap_per_yr, rtzo_nucap_min, rtzo_degen_cutoff,
      :          rtzo_degen_cutoff_per_yr, rtzo_degen_cutoff_max
-      CLOSE (70)
+      !CLOSE (70)
 
 
 C Idiot proofing -- otherwise the logic in solver will fail
@@ -174,6 +176,9 @@ C Print out some basic details about the run
       IF (SM.EQ.1) WRITE (*,*) 'Initial Mass of Star: ', SM, 'Solar Mass'
       IF (SM.NE.1) WRITE (*,*) 'Initial Mass of Star: ', SM, 'Solar Masses'
       
+      WRITE (*,*) 'Minimum Allowed Star Mass: ', MINMASS, 'Msun'
+      WRITE (*,*) 'Maximun Allowed Star Mass: ', MAXMASS, 'Msun'
+      
       IF (ENDAGE.LE.10**6) WRITE (*,*) 'Desired Final Age of Star: ', ENDAGE, 'Yrs'
       IF ((ENDAGE.GT.10**6).AND.(ENDAGE.LT.10**9)) WRITE (*,*) 'Desired Final Age of Star: ', ENDAGE / 10**6, 'Myrs'
       IF (ENDAGE.GE.10**9) WRITE (*,*) 'Desired Final Age of Star: ', ENDAGE / 10**9, 'Gyrs'
@@ -182,6 +187,7 @@ C Print out some basic details about the run
       
            
 C Print out the artifical energy stuff, see if it works
+      IF (TENG.GT.0) THEN
       WRITE (*,*) '===================================================================================================='
       WRITE (*,*) 'Desired Total Artificial Energy Injection: ', TENG
       WRITE (*,*) 'Desired Mass Below Base of Artificial Energy Region: ', SMASS
@@ -200,7 +206,7 @@ C Print out the artifical energy stuff, see if it works
       IF (INJMD.EQ.2) WRITE (*,*) 'Artificial Energy Injection Profile in Mass: ', 'SINE'
       IF (INJMD.EQ.3) WRITE (*,*) 'Artificial Energy Injection Profile in Mass: ', 'EXP'
       WRITE (*,*) '===================================================================================================='
-      
+      ENDIF
 C Convert RML from eta to coefficient required
       RML = 4d-13*RML
 *     
@@ -210,6 +216,7 @@ C Convert RML from eta to coefficient required
 !extra lines for COopac bit
       WRITE (*,*) '===================================================================================================='
       write(*,*) 'Selection for opacity is:',IOP
+      IF (IOP.EQ.1) WRITE (*,*) 'Using V4 Style Extended Opacity Tables'
       cbase=ZS*CC
       obase=ZS*CO
       fZ=ZS
@@ -668,7 +675,10 @@ C End of regular update section. Intermediate or final output section
       DTY = DT/CSECYR
       
 C Restart bit!!      
-      OPEN (UNIT=134,FILE='modin_last',ACCESS='SEQUENTIAL',STATUS='REPLACE')
+
+C=====================================================================
+C     This write the final files to the last modin and modout files
+      OPEN (UNIT=134,FILE='temp_last_modin',ACCESS='SEQUENTIAL',STATUS='REPLACE')
       WRITE (134, 99005) SM, DTY, AGE, PER, BMS, EC,NH,NP,NMOD,IB,PMH(1),PME(1)
       DO K = 1, NH
         WRITE (134, 99002) (H(J,K), J = 1, 15)
@@ -679,7 +689,7 @@ C Restart bit!!
       FLUSH (134)
       CLOSE (134)
       
-      OPEN (UNIT=135,FILE='nucmodin_last',ACCESS='SEQUENTIAL',STATUS='REPLACE')
+      OPEN (UNIT=135,FILE='temp_last_nucmodin',ACCESS='SEQUENTIAL',STATUS='REPLACE')
       WRITE (135, 99005) SM, DTY, AGE, PER, BMS, EC,NH,NP,NMOD,IB,PMH(1),PME(1)
       DO K = 1, NH
          WRITE (135, 99002) (HNUC(J,K),J=1,50)

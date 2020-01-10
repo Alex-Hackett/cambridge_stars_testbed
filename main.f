@@ -5,6 +5,7 @@ C The working of this programme is described in a file `writeup.tex';
 C Consequently I do not include many comments in the body of the programme.
 C Following is the main routine
       IMPLICIT REAL*8 (A-H,O-Z)
+      REAL*8 MINMASS, MAXMASS
       SAVE
       PARAMETER (MAXMSH = 2000)
 *      REAL MSUM
@@ -19,6 +20,8 @@ C Following is the main routine
       COMMON /ARTENG/ TENG, SMASS, FMASS, SHIENG, INJMD
       COMMON /INJTIMECTRL/ STARTTIMEINJ, ENDTIMEINJ
       COMMON /AGECTRL/ ENDAGE
+      COMMON /MASSCTRL/ MINMASS, MAXMASS
+      SAVE
       COMMON /OP    / ZS, LEDD, VM, GR, GRAD, ETH, RLF, EGR, R, QQ
       COMMON /YUK1  / PX(34), WMH, WMHE, VMH, VME, VMC, VMG, BE, VLH,
      :                VLE, VLC, VLN, VLT, MCB(12),WWW(100)
@@ -44,6 +47,8 @@ C Read physical data and an initial model
       tcpu = 0.0
       IHAVEFLASH = 0
 C Begin evolutionary loop of NSTEP time steps
+      WRITE (*,*) 'BEGINNING COMPUTATION'
+      CALL CPU_TIME(START)
     2 IF (NM .EQ. NSTEP) GOTO 3
 
 C Have we reached the set age?
@@ -51,6 +56,7 @@ C Have we reached the set age?
 *        WRITE (*,*) 'Set Age Reached'
 *        GOTO 3
 *      ENDIF
+    
          IF (AGE.LT.10**6) WRITE (*,*) 'Solving Model: ', NM, '     Model Age: ', AGE, 'Yrs'
          IF ((AGE.LT.10**9).AND.(AGE.GT.10**6)) WRITE (*,*) 'Solving Model: ', NM, '     Model Age: ', AGE/(10**6), 'Myr'
          IF (AGE.GT.10**9) WRITE (*,*) 'Solving Model: ', NM, '     Model Age: ', AGE/(10**9), 'Gyr'
@@ -58,6 +64,15 @@ C Have we reached the set age?
             WRITE (*,*) '!!AGE CUTOFF REACHED: TERMINATING!!'
             GOTO 3
          ENDIF
+* Have we reached the max or the min mass?
+         IF ((PX(9).GE.MAXMASS).OR.(PX(9).LE.MINMASS)) THEN
+            IF (PX(9).GE.MAXMASS) WRITE (*,*) 'MASS TOO LARGE'
+            IF (PX(9).LE.MINMASS) WRITE (*,*) 'MASS TOO SMALL'
+            WRITE (*,*) '!!STAR MASS REACHED: ', PX(9), 'TERMINATING!!'
+            GOTO 3
+         ENDIF  
+      
+         
 C Solve for structure, mesh, and major composition variables
          CALL SOLVER ( 1, ITER, KTER, ERR, ID, NWRT5 )
          VLEOLD = VLE
@@ -198,11 +213,14 @@ C Check to see if the model is going through the helium flash TODO
 !      GOTO 3
 !      ENDIF
        
-      
+
       
       GOTO 2
 C Output the last converged model. 
     3 CALL PRINTA ( 1, NSTEP, ITER1, ITER2, NWRT4 )
+      CALL CPU_TIME(FINISH)
+      WRITE (*,*) 'COMPUTATION TERMINATED'
+      WRITE (*,*) FINISH-START, ' CPU SECONDS ELAPSED'
       STOP
       END
       
