@@ -27,12 +27,19 @@ C Following is the main routine
      :                VLE, VLC, VLN, VLT, MCB(12),WWW(100)
      
 C Common blocks for TZO stuff
-      COMMON /ITZO/ itzo_yn, itzo_cmass_pre, itzo_stripcorehe, itzo_stophighburn,
-     :          itzo_noneutburn, itzo_zerocore
+      COMMON /ITZO/ itzo_yn,itzo_cmass_pre, itzo_stripcorehe, itzo_stophighburn,
+     :          itzo_noneutburn, itzo_zerocore,
+     :          itzo_ct_1, itzo_ct_2, itzo_ct_3
       COMMON /RTZO/ rtzo_mod_emass, rtzo_dcmassdt, rtzo_maxdt,
      :          rtzo_cut_non_degen_hburn, rtzo_EC, rtzo_nucap,
      :          rtzo_nucap_per_yr, rtzo_nucap_min, rtzo_degen_cutoff,
-     :          rtzo_degen_cutoff_per_yr, rtzo_degen_cutoff_max
+     :          rtzo_degen_cutoff_per_yr, rtzo_degen_cutoff_max,
+     :          rtzo_RCD_per_yr, rtzo_RCD_max,
+     :          rtzo_meshfluid, rtzo_meshfluid_per_yr, rtzo_meshfluid_min,
+     :          rtzo_alpha, rtzo_alpha_per_yr, rtzo_alpha_max,
+     :          rtzo_ct_1, rtzo_ct_1_per_yr, rtzo_ct_1_max,
+     :          rtzo_ct_2, rtzo_ct_2_per_yr, rtzo_ct_2_max,
+     :          rtzo_ct_3, rtzo_ct_3_per_yr, rtzo_ct_3_max
       COMMON /TZOSTUFF/ cmass
       
       real dtime,cpu(2),dt,tcpu

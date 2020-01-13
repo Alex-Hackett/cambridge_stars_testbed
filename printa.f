@@ -61,13 +61,18 @@
       
 C Common blocks for TZO stuff
       COMMON /ITZO/ itzo_yn,itzo_cmass_pre, itzo_stripcorehe, itzo_stophighburn,
-     :          itzo_noneutburn, itzo_zerocore
+     :          itzo_noneutburn, itzo_zerocore,
+     :          itzo_ct_1, itzo_ct_2, itzo_ct_3
       COMMON /RTZO/ rtzo_mod_emass, rtzo_dcmassdt, rtzo_maxdt,
      :          rtzo_cut_non_degen_hburn, rtzo_EC, rtzo_nucap,
      :          rtzo_nucap_per_yr, rtzo_nucap_min, rtzo_degen_cutoff,
      :          rtzo_degen_cutoff_per_yr, rtzo_degen_cutoff_max,
      :          rtzo_RCD_per_yr, rtzo_RCD_max,
-     :          rtzo_meshfluid, rtzo_meshfluid_per_yr, rtzo_meshfluid_min
+     :          rtzo_meshfluid, rtzo_meshfluid_per_yr, rtzo_meshfluid_min,
+     :          rtzo_alpha, rtzo_alpha_per_yr, rtzo_alpha_max,
+     :          rtzo_ct_1, rtzo_ct_1_per_yr, rtzo_ct_1_max,
+     :          rtzo_ct_2, rtzo_ct_2_per_yr, rtzo_ct_2_max,
+     :          rtzo_ct_3, rtzo_ct_3_per_yr, rtzo_ct_3_max
       COMMON /TZOSTUFF/ cmass
       COMMON /PRETZO/ S_DTZO(100)
       
@@ -139,19 +144,25 @@ C Read miscellaneous data, usually unchanged during one evol run
 C Read the TZO Control data
       !OPEN (UNIT=70, FILE='tzo_data', ACCESS='SEQUENTIAL', STATUS='OLD')
       READ (70, 99101) itzo_yn,itzo_cmass_pre, itzo_stripcorehe, itzo_stophighburn,
-     :          itzo_noneutburn, itzo_zerocore
-      READ (70, 99102) rtzo_mod_emass, rtzo_dcmassdt, rtzo_maxdt,
-     :          rtzo_cut_non_degen_hburn, rtzo_EC, rtzo_nucap,
-     :          rtzo_nucap_per_yr, rtzo_nucap_min, rtzo_degen_cutoff,
-     :          rtzo_degen_cutoff_per_yr, rtzo_degen_cutoff_max,
+     :          itzo_noneutburn, itzo_zerocore,
+     :          itzo_ct_1, itzo_ct_2, itzo_ct_3
+      READ (70, 99102) rtzo_mod_emass, rtzo_dcmassdt,
+     :          rtzo_maxdt,
+     :          rtzo_cut_non_degen_hburn,
+     :          rtzo_EC,
+     :          rtzo_nucap, rtzo_nucap_per_yr, rtzo_nucap_min,
+     :          rtzo_degen_cutoff,rtzo_degen_cutoff_per_yr, rtzo_degen_cutoff_max,
      :          rtzo_RCD_per_yr, rtzo_RCD_max,
-     :          rtzo_meshfluid, rtzo_meshfluid_per_yr, rtzo_meshfluid_min
+     :          rtzo_meshfluid, rtzo_meshfluid_per_yr, rtzo_meshfluid_min,
+     :          rtzo_alpha, rtzo_alpha_per_yr, rtzo_alpha_max,
+     :          rtzo_ct_1, rtzo_ct_1_per_yr, rtzo_ct_1_max,
+     :          rtzo_ct_2, rtzo_ct_2_per_yr, rtzo_ct_2_max,
+     :          rtzo_ct_3, rtzo_ct_3_per_yr, rtzo_ct_3_max
       !CLOSE (70)
-99101 FORMAT (I4,/,I4,/,I4,/,I4,/,I4,/,I4)
-99102 FORMAT (E14.6,/,E14.6,/,E14.6,/,E14.6,/,E14.6,/,E14.6,/,
-     :        E14.6,/,E14.6,/,E14.6,/,E14.6,/,E14.6,/,E14.6,/,E14.6
-     :         ,/,E14.6,/,E14.6,/,E14.6)
-
+99101 FORMAT (I4,/,I4,/,I4,/,I4,/,I4,/,I4,/,3I4)
+99102 FORMAT (2E14.6,/,E14.6,/,E14.6,/,E14.6,/,3E14.6,/,
+     :        3E14.6,/,2E14.6,/,3E14.6,/,3E14.6,/,
+     :        3E14.6,/,3E14.6,/,3E14.6)  
 C Idiot proofing -- otherwise the logic in solver will fail
       FACSGMIN = DMIN1(1d0, FACSGMIN)
 C Read data for initial model (often last model of previous run)
@@ -488,6 +499,22 @@ C   16    PR(J) = CT(J+10)
       S_DTZO(14) = rtzo_meshfluid
       S_DTZO(15) = rtzo_meshfluid_per_yr
       S_DTZO(16) = rtzo_meshfluid_min
+      S_DTZO(17) = rtzo_alpha
+      S_DTZO(18) = rtzo_alpha_per_yr
+      S_DTZO(19) = rtzo_alpha_max
+      
+      S_DTZO(20) = rtzo_ct_1
+      S_DTZO(21) = rtzo_ct_1_per_yr
+      S_DTZO(22) = rtzo_ct_1_max
+      
+      S_DTZO(23) = rtzo_ct_2
+      S_DTZO(24) = rtzo_ct_2_per_yr
+      S_DTZO(25) = rtzo_ct_2_max
+      
+      S_DTZO(26) = rtzo_ct_3
+      S_DTZO(27) = rtzo_ct_3_per_yr
+      S_DTZO(28) = rtzo_ct_3_max
+      
       NPR = NMOD
       KPR = KS
       GOTO 40
@@ -527,6 +554,22 @@ C   10    PR(J) = CT(J+10)
       S_DTZO(14) = rtzo_meshfluid
       S_DTZO(15) = rtzo_meshfluid_per_yr
       S_DTZO(16) = rtzo_meshfluid_min
+      S_DTZO(17) = rtzo_alpha
+      S_DTZO(18) = rtzo_alpha_per_yr
+      S_DTZO(19) = rtzo_alpha_max
+      
+      S_DTZO(20) = rtzo_ct_1
+      S_DTZO(21) = rtzo_ct_1_per_yr
+      S_DTZO(22) = rtzo_ct_1_max
+      
+      S_DTZO(23) = rtzo_ct_2
+      S_DTZO(24) = rtzo_ct_2_per_yr
+      S_DTZO(25) = rtzo_ct_2_max
+      
+      S_DTZO(26) = rtzo_ct_3
+      S_DTZO(27) = rtzo_ct_3_per_yr
+      S_DTZO(28) = rtzo_ct_3_max
+      
       NPR = NMOD
       KPR = KS
 C PRINTB prints out every NT2'th meshpoint of every NT1'th model; NT3
@@ -553,6 +596,26 @@ C TZO Evolve TZO control parameters with time, as needed...
         rtzo_meshfluid = rtzo_meshfluid * (1.D0 + DTY*rtzo_meshfluid_per_yr)
         rtzo_meshfluid = DMAX1(0.D0, DMIN1(1.D0, rtzo_meshfluid))
       
+      
+      ENDIF
+      
+C TZO, evolve the MSF coefficients, as needed 
+      IF (itzo_yn.EQ.1) THEN
+        
+        IF(itzo_ct_1.GT.0) THEN
+            CT(itzo_ct_1) = MAX(rtzo_ct_1, 
+     :      MIN(rtzo_ct_1_max, CT(itzo_ct_1) + DTY*rtzo_ct_1_per_yr))
+        ENDIF
+        
+        IF(itzo_ct_2.GT.0) THEN
+            CT(itzo_ct_2) = MAX(rtzo_ct_2, 
+     :      MIN(rtzo_ct_2_max, CT(itzo_ct_2) + DTY*rtzo_ct_2_per_yr))
+        ENDIF
+            
+        IF(itzo_ct_3.GT.0) THEN
+            CT(itzo_ct_3) = MAX(rtzo_ct_3, 
+     :      MIN(rtzo_ct_3_max, CT(itzo_ct_3) + DTY*rtzo_ct_3_per_yr))
+        ENDIF
       
       ENDIF
 *     TRB = TRB*(1.0D0 + DTY*ECT)
@@ -773,7 +836,7 @@ C Copy HORB from star 1
 C Need to do this better - at present I'm writing out blanks
             WRITE (54, 99002) (H(J,K), J=16, 30)
          END DO
-         DO K = 1, NH
+         DO K = 1, NH(20)
             WRITE (54, 99002) (DH(J,K), J=16, 30)
          END DO
          CALL FLUSH(54)
@@ -826,6 +889,21 @@ C   11    CT(J+10) = PR(J)
       rtzo_meshfluid = S_DTZO(14)
       rtzo_meshfluid_per_yr = S_DTZO(15)
       rtzo_meshfluid_min = S_DTZO(16)
+      rtzo_alpha = S_DTZO(17)
+      rtzo_alpha_per_yr = S_DTZO(18)
+      rtzo_alpha_max = S_DTZO(19)
+      
+      rtzo_ct_1 = S_DTZO(20)
+      rtzo_ct_1_per_yr = S_DTZO(21)
+      rtzo_ct_1_max = S_DTZO(22)
+      
+      rtzo_ct_2 = S_DTZO(23)
+      rtzo_ct_2_per_yr = S_DTZO(24)
+      rtzo_ct_2_max = S_DTZO(25)
+      
+      rtzo_ct_3 = S_DTZO(26)
+      rtzo_ct_3_per_yr = S_DTZO(27)
+      rtzo_ct_3_max = S_DTZO(28)
       
       NMOD = NPR
    34 DT=0.8*DT

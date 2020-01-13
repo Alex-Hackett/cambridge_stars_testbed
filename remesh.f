@@ -18,6 +18,19 @@
      &                CEN, CPL, CMEVMU, CSECYR, CLSUN, CMSUN, RSUN, TSUNYR
       COMMON /INERTI/ VI(2)
       COMMON /ANGMOM/ VROT1, VROT2, FMAC, FAM, IRAM, IRS1, IRS2
+      COMMON /ITZO/ itzo_yn,itzo_cmass_pre, itzo_stripcorehe, itzo_stophighburn,
+     :          itzo_noneutburn, itzo_zerocore,
+     :          itzo_ct_1, itzo_ct_2, itzo_ct_3
+      COMMON /RTZO/ rtzo_mod_emass, rtzo_dcmassdt, rtzo_maxdt,
+     :          rtzo_cut_non_degen_hburn, rtzo_EC, rtzo_nucap,
+     :          rtzo_nucap_per_yr, rtzo_nucap_min, rtzo_degen_cutoff,
+     :          rtzo_degen_cutoff_per_yr, rtzo_degen_cutoff_max,
+     :          rtzo_RCD_per_yr, rtzo_RCD_max,
+     :          rtzo_meshfluid, rtzo_meshfluid_per_yr, rtzo_meshfluid_min,
+     :          rtzo_alpha, rtzo_alpha_per_yr, rtzo_alpha_max,
+     :          rtzo_ct_1, rtzo_ct_1_per_yr, rtzo_ct_1_max,
+     :          rtzo_ct_2, rtzo_ct_2_per_yr, rtzo_ct_2_max,
+     :          rtzo_ct_3, rtzo_ct_3_per_yr, rtzo_ct_3_max
 !      write (32,*) "Remeshing model"
 C RJS 22/11/07 - Save NMESH, we need it for the second remesh pass
       NMESHORIG = NMESH
