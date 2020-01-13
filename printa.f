@@ -836,7 +836,7 @@ C Copy HORB from star 1
 C Need to do this better - at present I'm writing out blanks
             WRITE (54, 99002) (H(J,K), J=16, 30)
          END DO
-         DO K = 1, NH(20)
+         DO K = 1, NH
             WRITE (54, 99002) (DH(J,K), J=16, 30)
          END DO
          CALL FLUSH(54)
