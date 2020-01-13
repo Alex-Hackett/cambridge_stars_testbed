@@ -421,12 +421,48 @@ C Convert some things to `cgs' units: 10**11 cm, 10**33 gm, 10**33 erg/s
       RMT = MSUN*RMT/CSECYR
       RML = RML*MSUN**2/LSUN/RSUN/CSECYR
 C Optionally, re-initialise mass
+! Old Version with mass resolution bug!!
+!      IF ( NCH.GE.1 ) THEN
+!         H(4,1) = DLOG(TM(1)) 
+!         HPR(4,1) = DLOG(TM(1)) 
+!         IF (IMODE.EQ.2) THEN
+!            H(19,1) = DLOG(TM(2))
+!            HPR(19,1) = DLOG(TM(2))
+!         END IF
+!      END IF
+!      IF (IMODE.EQ.2) THEN
+!         BM = MSUN*(SM + SM2)   !MSUN*BMS
+!      ELSE
+!         BM = MSUN*BMS
+!      END IF
+!      M0=BM-TM(1)
+!      ANG = TM(1)*(BM-TM(1))*(3.55223D0*PER/BM)**(1D0/3D0)
+*
+* CAT 30th August 2009
+* This is the problematic bit for remeshing because TM(1/2) just doesn't
+* have the required accuracy!
+*
       IF ( NCH.GE.1 ) THEN
-         H(4,1) = DLOG(TM(1)) 
-         HPR(4,1) = DLOG(TM(1)) 
-         IF (IMODE.EQ.2) THEN
-            H(19,1) = DLOG(TM(2))
-            HPR(19,1) = DLOG(TM(2))
+         IF ( NCH .LE. 3 ) THEN
+            NEWMS = DLOG(TM(1))
+            OLDMS = H(4,1)
+            NEWMSR = NEWMS
+            OLDMSR = OLDMS
+*
+* CAT 7th September 2009
+* Scale all mass shells when changing mass.  This replicates the old
+* situation where relative mass was stored rather than actual, or so we think
+*
+            DO SHELL = 1,NH
+               H(4,SHELL) = H(4,SHELL)*NEWMS/OLDMS
+               HPR(4,SHELL) = HPR(4,SHELL)*NEWMSR/OLMSR
+            ENDDO
+            IF (IMODE.EQ.2) THEN
+               H(19,1) = DLOG(TM(2))
+               HPR(19,1) = DLOG(TM(2))
+            END IF
+         ELSE
+            NCH = NCH - 2
          END IF
       END IF
       IF (IMODE.EQ.2) THEN
@@ -436,6 +472,8 @@ C Optionally, re-initialise mass
       END IF
       M0=BM-TM(1)
       ANG = TM(1)*(BM-TM(1))*(3.55223D0*PER/BM)**(1D0/3D0)
+
+
  13   CONTINUE
   102 FORMAT(2(F8.4,1PE16.9,4E10.3,0P7F8.5,F8.3,2F8.4,/),3F8.4,F10.4, 
      :1P2E10.3,0PF10.4,7F8.5,F8.3,2F8.4,/,F8.4,12F8.3,5F8.4,/,3F8.4,I6)
