@@ -26,7 +26,9 @@ C Common blocks for TZO stuff
       COMMON /RTZO/ rtzo_mod_emass, rtzo_dcmassdt, rtzo_maxdt,
      :          rtzo_cut_non_degen_hburn, rtzo_EC, rtzo_nucap,
      :          rtzo_nucap_per_yr, rtzo_nucap_min, rtzo_degen_cutoff,
-     :          rtzo_degen_cutoff_per_yr, rtzo_degen_cutoff_max
+     :          rtzo_degen_cutoff_per_yr, rtzo_degen_cutoff_max,
+     :          rtzo_RCD_per_yr, rtzo_RCD_max,
+     :          rtzo_meshfluid, rtzo_meshfluid_per_yr, rtzo_meshfluid_min
       COMMON /TZOSTUFF/ cmass
       
       
@@ -451,6 +453,9 @@ C Common blocks for TZO stuff
                ENB = TT*(RT*CNIU(IT+1,IR+1,2) + RU*CNIU(IT+1,IR,2))
      :              + TU*(RT*CNIU(IT,IR+1,2) + RU*CNIU(IT,IR,2))
                EN = -10.0D0**ENP - NZZ*10.0D0**ENB
+               IF (itzo_yn.EQ.1) THEN
+                EN = DMAX1(EN, -1.D0 * rtzo_nucap)
+               ENDIF
             END IF
          END IF
       ELSE
@@ -562,6 +567,9 @@ C     Restore FR to log rho
             ENB = TT*(RT*CNIU(IT+1,IR+1,2) + RU*CNIU(IT+1,IR,2))
      :           + TU*(RT*CNIU(IT,IR+1,2) + RU*CNIU(IT,IR,2))
             EN = -10.0D0**ENP - NZZ*10.0D0**ENB
+            IF (itzo_yn.EQ.1) THEN
+                EN = DMAX1(EN, -1.D0 * rtzo_nucap)
+            ENDIF
          END IF
       END IF
 C Add molecular opacities to tabulated ones

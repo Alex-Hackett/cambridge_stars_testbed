@@ -60,7 +60,9 @@ C Common blocks for TZO stuff
       COMMON /RTZO/ rtzo_mod_emass, rtzo_dcmassdt, rtzo_maxdt,
      :          rtzo_cut_non_degen_hburn, rtzo_EC, rtzo_nucap,
      :          rtzo_nucap_per_yr, rtzo_nucap_min, rtzo_degen_cutoff,
-     :          rtzo_degen_cutoff_per_yr, rtzo_degen_cutoff_max
+     :          rtzo_degen_cutoff_per_yr, rtzo_degen_cutoff_max,
+     :          rtzo_RCD_per_yr, rtzo_RCD_max,
+     :          rtzo_meshfluid, rtzo_meshfluid_per_yr, rtzo_meshfluid_min
       COMMON /TZOSTUFF/ cmass
       
       
@@ -234,6 +236,26 @@ C           For the Sin case
       ELSE
          AAWT = 1.0D0
       END IF
+C TZO, add an extra EC-Like term to prop up the core
+C TZO stuff, compute PSIF
+      F_F = EXP(AF)
+      F_T = EXP(AT)
+      F_UF = F_F/(1.0+F_F)
+      F_WF = SQRT(1.0+F_F)
+      F_PSI = AF + 2.0*(F_WF-LOG(1.0+F_WF))
+      
+      F_PSIF = MIN(F_PSI, 50.D0)
+      IF (itzo_yn.EQ.1) THEN
+        IF (itzo_cmass_pre.EQ.0) THEN
+            cmass = rtzo_mod_emass
+        ELSE IF (itzo_cmass_pre.EQ.1) THEN
+            cmass = MIN(rtzo_mod_emass, MAX(1.D0, EXP(F_PSIF-rtzo_degen_cutoff)))
+        ENDIF
+        EC2 = rtzo_EC * MAX(0.D0, cmass - 1.D0)
+        TOINJ = TOINJ + EC2
+      ENDIF
+      
+      
       LK = (TOINJ + EX + EN + EC - ITH*T*(SF*DAF+ST*DAT)/DT)*MK
       LKP = TOINJ + EX + EN + EC - ITH*T*(SF*DAF+ST*DAT)/DT
       SIG = SF*DAF
@@ -245,42 +267,62 @@ C radius equation
       R2K = MK/(0.5D0*PI4*RHO*R)
 C composition equations
 * simplified to exclude reactions involving Mg24
+
+C TZO stuff, higher burning only in degenerate regions
+
+
+      DZ_HYDRO = IX ! This is the hydrogen burn rate, needed for tzo stuff
+      DZ_HIGH = IZ ! This is the higher burning rate, needed for tzo stuff
+      
+      IF (itzo_yn.EQ.1) THEN
+        IF (itzo_stophighburn.EQ.1) THEN
+            DZ_HIGH = MIN(1.D0, MAX(0.D0, cmass - 1.D0))
+        ENDIF
+C TZO "Fiddle" (As Ross put it) to prevent H burn in non-degen regions
+        IF (F_PSI.GT.rtzo_cut_non_degen_hburn) THEN
+            DZ_HYDRO = MIN(1.D0, EXP(F_PSI - 15.D0))
+        ENDIF
+        
+      ENDIF
+
 C hydrogen equation with MS baryon correction when ICN = 1
       X1 = VX1
+      
+      
 *      X1T = (2.0*IX*((1-ICN)*RPP + RPC + RPNG + (1-2*ICN)*(RPN + RPO))
-      X1T = (IX*((1-ICN)*RPP*3 + RPC*2 + RPNG*2 -R33*2 +R34  +2* (1-2*ICN)*(RPN + RPO))
+      X1T = (DZ_HYDRO*((1-ICN)*RPP*3 + RPC*2 + RPNG*2 -R33*2 +R34  +2* (1-2*ICN)*(RPN + RPO))
      :     + DX1/DT)*MK
 *     x1t = (-5d-7*(0.76d0-x1)/csecyr + dx1/dt)*mk
 C helium equation
       X4 = VX4
 *      X4T = (4.0*(-IX*(0.5*RPP + RPN + RPO)*(1-ICN)
-      X4T = (4.0*(-IX*(RPN + RPO + R33 +R34)*(1-ICN)
+      X4T = (4.0*(-DZ_HYDRO*(RPN + RPO + R33 +R34)*(1-ICN)
 *     :     + IY*(3.0*R3A + RAC + 1.5*RAN + RAO + RANE)
 *     :     - IZ*(RCC + RCO + 2.0*ROO + RGNE + RGMG)) + DX4/DT)*MK
      :     + IY*(3.0*R3A + RAC + 1.5*RAN + RAO)
-     :     - IZ*(RCC + RGNE)) + DX4/DT)*MK
+     :     - DZ_HIGH*(RCC + RGNE)) + DX4/DT)*MK
 *     x4t = (5d-7*(0.76-x1)/csecyr + dx4/dt)*mk
 C carbon equation 
       X12 = VX12
-      X12T = (12.0*(IX*(RPC - RPN) - IY*(R3A - RAC)
+      X12T = (12.0*(DZ_HYDRO*(RPC - RPN) - IY*(R3A - RAC)
 *     :            + IZ*(2.0*(RCC + RCCG) + RCO)) + DX12/DT)*MK
-     :            + IZ*2.0*RCC) + DX12/DT)*MK
+     :            + DZ_HIGH*2.0*RCC) + DX12/DT)*MK
 C nitrogen equation
       X14 = VX14
-      X14T = (14.0*(IX*(RPN + RPNG - RPC - RPO) + IY*RAN) + DX14/DT)*MK
+      X14T = (14.0*(DZ_HYDRO*(RPN + RPNG - RPC - RPO) + IY*RAN) + DX14/DT)*MK
 C oxygen equation
       X16 = VX16
-      X16T = (16.0*(IX*(RPO - RPNG) - IY*(RAC - RAO)
+      X16T = (16.0*(DZ_HYDRO*(RPO - RPNG) - IY*(RAC - RAO)
 *     :            + IZ*(RCO + 2.0*ROO - RGNE)) + DX16/DT)*MK
-     :            - IZ*RGNE) + DX16/DT)*MK
+     :            - DZ_HIGH*RGNE) + DX16/DT)*MK
 C neon equation
       X20 = VX20
 *      X20T = (20.0*(IY*(RANE - RAN - RAO) + IZ*(RGNE - RGMG - RCC))
-      X20T = (20.0*(-IY*(RAN + RAO) + IZ*(RGNE - RCC))
+      X20T = (20.0*(-IY*(RAN + RAO) + DZ_HIGH*(RGNE - RCC))
      :            + DX20/DT)*MK
 C He3 equation
       X3 = VX3
-       X3T = (3.0*(-IX*RPP+IX*(2d0*R33+R34))+DX3/DT)*MK
+       X3T = (3.0*(-DZ_HYDRO*RPP+DZ_HYDRO*(2d0*R33+R34))+DX3/DT)*MK
 C fudged convective diffusion coefficient: OS > 0 gives overshooting
       B = PR/PG
       AMAP=0.1D0/DABS(APM*M)

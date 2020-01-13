@@ -65,13 +65,14 @@ C Common blocks for TZO stuff
       COMMON /RTZO/ rtzo_mod_emass, rtzo_dcmassdt, rtzo_maxdt,
      :          rtzo_cut_non_degen_hburn, rtzo_EC, rtzo_nucap,
      :          rtzo_nucap_per_yr, rtzo_nucap_min, rtzo_degen_cutoff,
-     :          rtzo_degen_cutoff_per_yr, rtzo_degen_cutoff_max
+     :          rtzo_degen_cutoff_per_yr, rtzo_degen_cutoff_max,
+     :          rtzo_RCD_per_yr, rtzo_RCD_max,
+     :          rtzo_meshfluid, rtzo_meshfluid_per_yr, rtzo_meshfluid_min
       COMMON /TZOSTUFF/ cmass
+      COMMON /PRETZO/ S_DTZO(100)
       
 *99002 FORMAT (1X, 1P, 12E13.5, 0P) 33
-99101 FORMAT (I4,/,I4,/,I4,/,I4,/,I4,/,I4)
-99102 FORMAT (E14.6,/,E14.6,/,E14.6,/,E14.6,/,E14.6,/,E14.6,/,
-     :        E14.6,/,E14.6,/,E14.6,/,E14.6,/,E14.6)
+
 99002 FORMAT (1P, 50E15.8, 0P)
 99003 FORMAT (12I4,/,12I4,/,7I4,/,1P,5E8.1,0P,/,2(10I3,/,3(30I3,/)),34I
      :3,/,11I3,/, 9F5.2, 1P, 3E8.1,
@@ -142,9 +143,14 @@ C Read the TZO Control data
       READ (70, 99102) rtzo_mod_emass, rtzo_dcmassdt, rtzo_maxdt,
      :          rtzo_cut_non_degen_hburn, rtzo_EC, rtzo_nucap,
      :          rtzo_nucap_per_yr, rtzo_nucap_min, rtzo_degen_cutoff,
-     :          rtzo_degen_cutoff_per_yr, rtzo_degen_cutoff_max
+     :          rtzo_degen_cutoff_per_yr, rtzo_degen_cutoff_max,
+     :          rtzo_RCD_per_yr, rtzo_RCD_max,
+     :          rtzo_meshfluid, rtzo_meshfluid_per_yr, rtzo_meshfluid_min
       !CLOSE (70)
-
+99101 FORMAT (I4,/,I4,/,I4,/,I4,/,I4,/,I4)
+99102 FORMAT (E14.6,/,E14.6,/,E14.6,/,E14.6,/,E14.6,/,E14.6,/,
+     :        E14.6,/,E14.6,/,E14.6,/,E14.6,/,E14.6,/,E14.6,/,E14.6
+     :         ,/,E14.6,/,E14.6,/,E14.6)
 
 C Idiot proofing -- otherwise the logic in solver will fail
       FACSGMIN = DMIN1(1d0, FACSGMIN)
@@ -465,6 +471,23 @@ c Store certain previous values, for possible emergency restart
       PR(14) = TC(2)
 C      DO 16 J = 1,13
 C   16    PR(J) = CT(J+10)
+      ! Store the "real" tzo values
+      S_DTZO(1) = rtzo_mod_emass
+      S_DTZO(2) = rtzo_dcmassdt
+      S_DTZO(3) = rtzo_maxdt
+      S_DTZO(4) = rtzo_cut_non_degen_hburn
+      S_DTZO(5) = rtzo_EC
+      S_DTZO(6) = rtzo_nucap
+      S_DTZO(7) = rtzo_nucap_per_yr
+      S_DTZO(8) = rtzo_nucap_min
+      S_DTZO(9) = rtzo_degen_cutoff
+      S_DTZO(10) = rtzo_degen_cutoff_per_yr
+      S_DTZO(11) = rtzo_degen_cutoff_max
+      S_DTZO(12) = rtzo_RCD_per_yr
+      S_DTZO(13) = rtzo_RCD_max
+      S_DTZO(14) = rtzo_meshfluid
+      S_DTZO(15) = rtzo_meshfluid_per_yr
+      S_DTZO(16) = rtzo_meshfluid_min
       NPR = NMOD
       KPR = KS
       GOTO 40
@@ -488,6 +511,22 @@ c Store certain previous values, for possible emergency restart
       PR(14) = TC(2)
 C      DO 10 J = 1,13
 C   10    PR(J) = CT(J+10)
+      S_DTZO(1) = rtzo_mod_emass
+      S_DTZO(2) = rtzo_dcmassdt
+      S_DTZO(3) = rtzo_maxdt
+      S_DTZO(4) = rtzo_cut_non_degen_hburn
+      S_DTZO(5) = rtzo_EC
+      S_DTZO(6) = rtzo_nucap
+      S_DTZO(7) = rtzo_nucap_per_yr
+      S_DTZO(8) = rtzo_nucap_min
+      S_DTZO(9) = rtzo_degen_cutoff
+      S_DTZO(10) = rtzo_degen_cutoff_per_yr
+      S_DTZO(11) = rtzo_degen_cutoff_max
+      S_DTZO(12) = rtzo_RCD_per_yr
+      S_DTZO(13) = rtzo_RCD_max
+      S_DTZO(14) = rtzo_meshfluid
+      S_DTZO(15) = rtzo_meshfluid_per_yr
+      S_DTZO(16) = rtzo_meshfluid_min
       NPR = NMOD
       KPR = KS
 C PRINTB prints out every NT2'th meshpoint of every NT1'th model; NT3
@@ -499,6 +538,23 @@ C `pages' per printed model; also 4-line summary for every NT4'th model
       CALL PRINTB ( DTY, PER, NT1, NT2, NT3, NT4, NMONT, NMOD, IEND )
       ANG = ANG/(1.0D0 + RHL*DTY)
       EC = EC*(1.0D0 + DTY*ECT)/(1.0D0 - DTY*ECA*EC) 
+      
+C TZO Evolve TZO control parameters with time, as needed...      
+      IF (itzo_yn.EQ.1) THEN
+        ! Do the neutron luminosity cap rtzo_nucap, rtzo_nucap_per_yr, rtzo_nucap_min
+        rtzo_nucap = rtzo_nucap * (1.D0 + DTY*rtzo_nucap_per_yr)
+        IF (rtzo_nucap.LT.rtzo_nucap_min) rtzo_nucap = rtzo_nucap_min
+        
+        ! Do the RCD (Convective turnover timescale)
+        RCD = RCD * (1.D0 + DTY*rtzo_RCD_per_yr)
+        IF (RCD.GT.rtzo_RCD_max) RCD = rtzo_RCD_max
+        
+        ! Do the Mesh Fluidity stuff
+        rtzo_meshfluid = rtzo_meshfluid * (1.D0 + DTY*rtzo_meshfluid_per_yr)
+        rtzo_meshfluid = DMAX1(0.D0, DMIN1(1.D0, rtzo_meshfluid))
+      
+      
+      ENDIF
 *     TRB = TRB*(1.0D0 + DTY*ECT)
 C FUDGE TO DEAL WITH KS outside range. THIS ***WILL*** SCREW UP BINARIES!
 C This is no longer used, so I don't care whether it works or not. RJS
@@ -754,6 +810,23 @@ C End of final output section. Start of emergency restart section
       TC(2) = PR(14)
 C      DO 11 J = 1,13
 C   11    CT(J+10) = PR(J)
+      rtzo_mod_emass = S_DTZO(1)
+      rtzo_dcmassdt = S_DTZO(2)
+      rtzo_maxdt = S_DTZO(3)
+      rtzo_cut_non_degen_hburn = S_DTZO(4) 
+      rtzo_EC = S_DTZO(5)
+      rtzo_nucap = S_DTZO(6)
+      rtzo_nucap_per_yr = S_DTZO(7)
+      rtzo_nucap_min = S_DTZO(8)
+      rtzo_degen_cutoff = S_DTZO(9)
+      rtzo_degen_cutoff_per_yr = S_DTZO(10)
+      rtzo_degen_cutoff_max = S_DTZO(11)
+      rtzo_RCD_per_yr = S_DTZO(12)
+      rtzo_RCD_max = S_DTZO(13)
+      rtzo_meshfluid = S_DTZO(14)
+      rtzo_meshfluid_per_yr = S_DTZO(15)
+      rtzo_meshfluid_min = S_DTZO(16)
+      
       NMOD = NPR
    34 DT=0.8*DT
       IF ( DT .LT. 0.01*PR(2) ) STOP
