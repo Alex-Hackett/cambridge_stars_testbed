@@ -155,7 +155,7 @@ C     EXX(J) = 0.0D0
                NPRINT = 0
 C     Decide whether to print the interior or not
                IF ( MOD(NMOD,NWRT1).EQ.0 ) NPRINT = 1               
-               !IF ( NPRINT.EQ.1 ) WRITE(32+20*(ISTAR-1), 99001) (AX(ISX(J)), J=1,30)
+               IF ( NPRINT.EQ.1 ) WRITE(333+20*(ISTAR-1), 99001) (AX(ISX(J)), J=1,30)
                WRITE (32,*) NMOD, AGE, NMESH
                IF (NPRINT.EQ.1.AND.IW(102).NE.0) WRITE (36+20*(ISTAR-1),*) NMOD
                IF (NPRINT.EQ.1.AND.IW(102).NE.0) WRITE (37+20*(ISTAR-1),*) NMOD
@@ -336,8 +336,10 @@ C RJS 4/4/07 Locate TH boundaries
 C Print the interior details on first `page', if required
             IF ( NPRINT.EQ.1.AND.MOD(K-1,NWRT2).EQ.0 ) WRITE(32+20*(ISTAR-1),99002) K,
      :           (PX(ISX(J)), J=1,34)
+            IF ( NPRINT.EQ.1.AND.MOD(K-1,NWRT2).EQ.0 ) WRITE(333+20*(ISTAR-1),99002) K,
+     :           (PX(ISX(J)), J=1,34)
 99007       FORMAT (I4, 1P, 17(1X,E10.3))
-            !IF ( NPRINT.EQ.1.AND.MOD(K,10*NWRT2).EQ.0 ) WRITE(32+20*(ISTAR-1),99002)
+            IF ( NPRINT.EQ.1.AND.MOD(K,10*NWRT2).EQ.0 ) WRITE(333+20*(ISTAR-1),99002)
             IF ( NPRINT.EQ.1.AND.MOD(K-1,NWRT2).EQ.0.AND.IW(102).NE.0) 
      :           WRITE(36+20*(ISTAR-1),99007) K,
      :           HNUC(1+50*(ISTAR-1),K), HNUC(2+50*(ISTAR-1),K), HNUC(3+50*(ISTAR-1),K),
@@ -405,6 +407,7 @@ C Write further `pages' for each detailed model, if required
          DO I=2, NWRT3
             IJ = 15*I-15
             IF ( NPRINT.EQ.1 ) WRITE(32+20*(ISTAR-1), 99001) (AX(ISX(J+IJ)), J=1,15)
+            
             DO KK = 1, NMESH
                K = NMESH + 1 - KK
 C Have to choose the SX's that are wanted
@@ -554,17 +557,18 @@ C If boundary moves in, reduce DD
             KICZ = KCB(3)
             KBICZ = KMX(2)
          END IF
-!         WRITE(32+20*(ISTAR-1),99003) NMOD,PX(9),DTY,TN,PER,VLH,VLT,SX(10,2),SX(11,2),
-!     :        SX(12,2),SX(13,2),SX(14,2),SX(15,2),SX(16,2),SX(1,2),SDC,STC,
-!     :        'cntr',VMH,AGE,TKH(ISTAR),RLF,VLE,VLN,XH,XHE,XC,XN,XO,XNE,XHE3,PX(1),
-!     :        SDS,STS,'srfc',VME,WMH,WMHE,BMS,DMT,VLC,SX(9,KTM),SX(10,KTM),
-!     :        SX(11,KTM),SX(12,KTM),SX(13,KTM),SX(14,KTM),SX(15,KTM),SX(16,KTM),
-!     :        SX(1,KTM),SDM,STM,'Tmax',VMC,MCB,WMI,PX(23),PER0,FR,FL,NMOD,
-!     :        KMH,KME,KCB,VMX,MEX,EMAX,KMX,KEX
+         WRITE(333+20*(ISTAR-1),99003) NMOD,PX(9),DTY,TN,PER,VLH,VLT,SX(10,2),SX(11,2),
+     :        SX(12,2),SX(13,2),SX(14,2),SX(15,2),SX(16,2),SX(1,2),SDC,STC,
+     :        'cntr',VMH,AGE,TKH(ISTAR),RLF,VLE,VLN,XH,XHE,XC,XN,XO,XNE,XHE3,PX(1),
+     :        SDS,STS,'srfc',VME,WMH,WMHE,BMS,DMT,VLC,SX(9,KTM),SX(10,KTM),
+     :        SX(11,KTM),SX(12,KTM),SX(13,KTM),SX(14,KTM),SX(15,KTM),SX(16,KTM),
+     :        SX(1,KTM),SDM,STM,'Tmax',VMC,MCB,WMI,PX(23),PER0,FR,FL,NMOD,
+     :        KMH,KME,KCB,VMX,MEX,EMAX,KMX,KEX
          CALL FLUSH (32+20*(ISTAR-1))
          CALL FLUSH (36+20*(ISTAR-1))
          CALL FLUSH (37+20*(ISTAR-1))
          CALL FLUSH (38+20*(ISTAR-1))
+         CALL FLUSH (333+20*(ISTAR-1))
 C Find convective envelope base
          MENV(ISTAR) = 0d0
          RENV(ISTAR) = 0d0

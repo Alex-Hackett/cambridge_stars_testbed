@@ -18,7 +18,25 @@
          FKL = FKLO
          FKH = FKHO
          WRITE (6,100) TF,FR,FKL,FKH
+!         WRITE (*,*) 'MIN T: ', TFM(1)
+!         WRITE (*,*) 'MAX T: ', TFM(MT)
+!         WRITE (*,*) 'MIN RHO: ', FRM(1)
+!         WRITE (*,*) 'MAX RHO: ', FRM(MR)
+         WRITE (333,100) TF,FR,FKL,FKH
+         ICHEATFLAG = 0
+         IF (TF.LT.TFM(1)) THEN
+            TF = TFM(1)
+            WRITE (*,*) '!!!SETTING TF TO TMIN!!!'
+            ICHEATFLAG = 1
+         ENDIF
+         IF (FR.LT.FRM(1)) THEN
+            FR = FRM(1)
+            WRITE (*,*) '!!!SETTING FR TO RMIN!!!'
+            ICHEATFLAG = 1
+         ENDIF
+         IF (ICHEATFLAG.EQ.1) GOTO 5
       ELSE
+    5    CONTINUE !AWFUL, AWFUL TMIN RHOMIN CHEAT
          FKLO = FKL
          FKHO = FKH
 *

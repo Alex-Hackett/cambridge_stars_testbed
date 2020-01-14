@@ -16,7 +16,12 @@
      &   (fR.LT.FRM(1)).OR.(fR.GE.FRM(MR))) THEN
          FKL = FKLO
          FKH = FKHO
+!         WRITE (*,*) 'MIN T: ', TFM(1)
+!         WRITE (*,*) 'MAX T: ', TFM(MT)
+!         WRITE (*,*) 'MIN RHO: ', FRM(1)
+!         WRITE (*,*) 'MAX RHO: ', FRM(MR)
          WRITE (6,100) fT,fR,FKL,FKH
+         WRITE (333,100) fT,fR,FKL,FKH
       ELSE
          FKLO = FKL
          FKHO = FKH

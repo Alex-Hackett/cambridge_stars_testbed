@@ -168,18 +168,18 @@ C Idiot proofing -- otherwise the logic in solver will fail
 C Read data for initial model (often last model of previous run)
 C e.g. SM = stellar mass, solar units; DTY = next timestep, years	 
       READ  (30, 99005) SM, DTY, AGE, PER, BMS, EC,NH,NP,NMOD,IB,PMH(1),PME(1)
-!      WRITE (32,99003) NH2,IT1,IT2,JIN,JOUT,NCH,JP,IZ,IMODE,
-!     :ICL,ION,IAM,IOP,IBC,INUC,ICN,IML(1),IML(2), ISGTH, IMO, IDIFF,
-!     :NT1,NT2,NT3,NT4,NT5,NSV,NMONT,
-!     :EP,DT3,DD,ID,ISX,DT1,DT2,CT,ZS,ALPHA,CH,CC,CN,CO, 
-!     :CNE,CMG,CSI,CFE,RCD,OS,RML,RMG,ECA,XF,DR,RMT,RHL,AC,AK1,AK2,ECT,
-!     :TRB,
-!     :IRAM, IRS1, VROT1, IRS2, VROT2, FMAC, FAM,
-!     :IVMC, TRC1, IVMS, TRC2, MWTS, IAGB, ISGFAC, FACSGMIN, SGTHFAC,
-!     :TENG, SMASS, FMASS, INJMD, STARTTIMEINJ, ENDTIMEINJ,
-!     :ENDAGE
-!      WRITE (32, 99005)
-!      WRITE (32, 99005) SM, DTY, AGE, PER, BMS, EC,NH,NP,NMOD,IB,PMH(1),PME(1)
+      WRITE (333,99003) NH2,IT1,IT2,JIN,JOUT,NCH,JP,IZ,IMODE,
+     :ICL,ION,IAM,IOP,IBC,INUC,ICN,IML(1),IML(2), ISGTH, IMO, IDIFF,
+     :NT1,NT2,NT3,NT4,NT5,NSV,NMONT,
+     :EP,DT3,DD,ID,ISX,DT1,DT2,CT,ZS,ALPHA,CH,CC,CN,CO, 
+     :CNE,CMG,CSI,CFE,RCD,OS,RML,RMG,ECA,XF,DR,RMT,RHL,AC,AK1,AK2,ECT,
+     :TRB,
+     :IRAM, IRS1, VROT1, IRS2, VROT2, FMAC, FAM,
+     :IVMC, TRC1, IVMS, TRC2, MWTS, IAGB, ISGFAC, FACSGMIN, SGTHFAC,
+     :TENG, SMASS, FMASS, INJMD, STARTTIMEINJ, ENDTIMEINJ,
+     :ENDAGE
+      WRITE (333, 99005)
+      WRITE (333, 99005) SM, DTY, AGE, PER, BMS, EC,NH,NP,NMOD,IB,PMH(1),PME(1)
       
 C Print out some basic details about the run
       WRITE (*,*) '================================================================================================================================'
@@ -422,47 +422,12 @@ C Convert some things to `cgs' units: 10**11 cm, 10**33 gm, 10**33 erg/s
       RML = RML*MSUN**2/LSUN/RSUN/CSECYR
 C Optionally, re-initialise mass
 ! Old Version with mass resolution bug!!
-!      IF ( NCH.GE.1 ) THEN
-!         H(4,1) = DLOG(TM(1)) 
-!         HPR(4,1) = DLOG(TM(1)) 
-!         IF (IMODE.EQ.2) THEN
-!            H(19,1) = DLOG(TM(2))
-!            HPR(19,1) = DLOG(TM(2))
-!         END IF
-!      END IF
-!      IF (IMODE.EQ.2) THEN
-!         BM = MSUN*(SM + SM2)   !MSUN*BMS
-!      ELSE
-!         BM = MSUN*BMS
-!      END IF
-!      M0=BM-TM(1)
-!      ANG = TM(1)*(BM-TM(1))*(3.55223D0*PER/BM)**(1D0/3D0)
-*
-* CAT 30th August 2009
-* This is the problematic bit for remeshing because TM(1/2) just doesn't
-* have the required accuracy!
-*
       IF ( NCH.GE.1 ) THEN
-         IF ( NCH .LE. 3 ) THEN
-            NEWMS = DLOG(TM(1))
-            OLDMS = H(4,1)
-            NEWMSR = NEWMS
-            OLDMSR = OLDMS
-*
-* CAT 7th September 2009
-* Scale all mass shells when changing mass.  This replicates the old
-* situation where relative mass was stored rather than actual, or so we think
-*
-            DO SHELL = 1,NH
-               H(4,SHELL) = H(4,SHELL)*NEWMS/OLDMS
-               HPR(4,SHELL) = HPR(4,SHELL)*NEWMSR/OLMSR
-            ENDDO
-            IF (IMODE.EQ.2) THEN
-               H(19,1) = DLOG(TM(2))
-               HPR(19,1) = DLOG(TM(2))
-            END IF
-         ELSE
-            NCH = NCH - 2
+         H(4,1) = DLOG(TM(1)) 
+         HPR(4,1) = DLOG(TM(1)) 
+         IF (IMODE.EQ.2) THEN
+            H(19,1) = DLOG(TM(2))
+            HPR(19,1) = DLOG(TM(2))
          END IF
       END IF
       IF (IMODE.EQ.2) THEN
@@ -472,6 +437,41 @@ C Optionally, re-initialise mass
       END IF
       M0=BM-TM(1)
       ANG = TM(1)*(BM-TM(1))*(3.55223D0*PER/BM)**(1D0/3D0)
+*
+* CAT 30th August 2009
+* This is the problematic bit for remeshing because TM(1/2) just doesn't
+* have the required accuracy!
+*
+*      IF ( NCH.GE.1 ) THEN
+*         IF ( NCH .LE. 3 ) THEN
+*            NEWMS = DLOG(TM(1))
+*            OLDMS = H(4,1)
+*            NEWMSR = NEWMS
+*            OLDMSR = OLDMS
+*
+* CAT 7th September 2009
+* Scale all mass shells when changing mass.  This replicates the old
+* situation where relative mass was stored rather than actual, or so we think
+*
+*            DO SHELL = 1,NH
+*               H(4,SHELL) = H(4,SHELL)*NEWMS/OLDMS
+*               HPR(4,SHELL) = HPR(4,SHELL)*NEWMSR/OLMSR
+*            ENDDO
+*            IF (IMODE.EQ.2) THEN
+*               H(19,1) = DLOG(TM(2))
+*               HPR(19,1) = DLOG(TM(2))
+*            END IF
+*         ELSE
+*            NCH = NCH - 2
+*         END IF
+*      END IF
+*      IF (IMODE.EQ.2) THEN
+*         BM = MSUN*(SM + SM2)   !MSUN*BMS
+*      ELSE
+*         BM = MSUN*BMS
+*      END IF
+*      M0=BM-TM(1)
+*      ANG = TM(1)*(BM-TM(1))*(3.55223D0*PER/BM)**(1D0/3D0)
 
 
  13   CONTINUE
@@ -684,7 +684,7 @@ C Blank DHNUC each time
 C            DHNUC(J,K) = 0d0
          END DO
       END DO
-!      write (32,*) "DELTA =",DELTA, " DD = ", DD
+      write (333,*) "DELTA =",DELTA, " DD = ", DD
       DTF = DMIN1 (DT2, DD/DELTA)      
 C     IF ( IHOLD .LE. 3 ) DTF = 1.0D0
       IF ( IHOLD .LE. 2 ) DTF = 1.0D0
@@ -750,7 +750,7 @@ C         IF (((RLFC(ISTAR)-RLFP(ISTAR))/RLFP(ISTAR)).GT.0.1
 CC     :        .AND.RLFP(ISTAR).GT.-1d-1.AND.RLFP(ISTAR).LT.-1d-3) THEN
 C     :        .AND.RLFP(ISTAR).GT.-1d-1) THEN
 C            DTY = 0.1*DTY
-C            write (32,*) "RLF issues - reducing timestep"
+C            write (333,*) "RLF issues - reducing timestep"
 C         END IF
       END DO
 C      IF (DABS((PER - PPER)/PPER).GT.0.01) DTY = 0.5*DTY
@@ -760,7 +760,7 @@ C      IF (DT1.EQ.1d0) GO TO 6
 C      IF (IDREDGE.EQ.3) GO TO 6      
       IF ( (JP.EQ.1 .AND. DTF.GE.DT1).OR.DTY.LT.6d-5 ) GO TO 6
 c clear DH in some circumstances
-!      WRITE (32,*) "Clearing DH..."
+      WRITE (333,*) "Clearing DH..."
       DO 7 K = 1, NH
          DO 7 J = 1, 60
     7       DH(J, K) = 0.0D0

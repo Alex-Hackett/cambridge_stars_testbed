@@ -31,7 +31,7 @@
      :          rtzo_ct_1, rtzo_ct_1_per_yr, rtzo_ct_1_max,
      :          rtzo_ct_2, rtzo_ct_2_per_yr, rtzo_ct_2_max,
      :          rtzo_ct_3, rtzo_ct_3_per_yr, rtzo_ct_3_max
-!      write (32,*) "Remeshing model"
+      write (333,*) "Remeshing model"
 C RJS 22/11/07 - Save NMESH, we need it for the second remesh pass
       NMESHORIG = NMESH
       DO ISTAR = 1,IMODE!2
@@ -168,13 +168,13 @@ C Orbital stuff doesn't work properly - copy surface point to all others
          END DO
 C Reset orbital AM using period in modin
          IF (IRAM.EQ.1.AND.ISTAR.EQ.1) THEN
-!            write (32,*) "Resetting orbital AM"
+            write (333,*) "Resetting orbital AM"
             DO K=1,NMESH
                H(13,K) = ANG
             END DO
          END IF
          IF (IRS1.EQ.1.AND.ISTAR.EQ.1) THEN
-!            write (32,*) "Resetting *1 spin"
+            write (333,*) "Resetting *1 spin"
             VROT = VROT1*1d3
             OMEGA = VROT/(1d9*DEXP(H(7,1)))
 C Convert omega to code units
@@ -254,6 +254,7 @@ C Is this line still necessary?
             H(6+15*(ISTAR-1), K) = 1.0D0/Q2
             IF (itzo_yn.EQ.1) THEN ! TZO Strip He, put in C
                 IF (K.GT.itzo_stripcorehe) THEN
+                    WRITE (333,*) 'TZO: STRIPPING CORE HE IN: SHELL, HE FRAC', K, H(9,K)
                     H(10,K) = H(10,K) + H(9,K)
                     H(9,K) = 0.D0
                 ENDIF

@@ -229,33 +229,42 @@ C ESTIMATE ACCURACY OF ITERATION
          END IF
          FRR = DLOG(ERR)*0.43429D0
          IF (NOC.GE.2.AND.FRR.GT.-5.85) FAC = 0.9d0
-!         IF (NV.LE.12) THEN
-!            IF (KTER.GT.NWRT5 .OR. ERR.GE.1D-2 .OR. ERMAX.GE.1D1)
-!     :           WRITE(32, 99002) KTER, FRR, FAC, (MK(J), ERT(J), J=1, NV)
-!         ELSE
-!            IF (KTER.GT.NWRT5 .OR. ERR.GE.1D-2 .OR. ERMAX.GE.1D1)
-!     :           WRITE(32, 99003) KTER, FRR, FAC, (MK(J), ERT(J), J=1, NV)
-!         END IF
+         IF (NV.LE.12) THEN
+            IF (KTER.GT.NWRT5 .OR. ERR.GE.1D-2 .OR. ERMAX.GE.1D1)
+     :           WRITE(333, *) 'KTER, FRR, FAC, (MK(J), ERT(J), J=1, NV)',
+     :           KTER, FRR, FAC, (MK(J), ERT(J), J=1, NV)
+         ELSE
+            IF (KTER.GT.NWRT5 .OR. ERR.GE.1D-2 .OR. ERMAX.GE.1D1)
+     :           WRITE(333, *) 'KTER, FRR, FAC, (MK(J), ERT(J), J=1, NV)',
+     :           KTER, FRR, FAC, (MK(J), ERT(J), J=1, NV)
+         END IF
 99002    FORMAT (1X, I2, 2F7.2, 12(I4,F7.4))
 99003    FORMAT (1X, I2, 2F7.2, 12(I4,F7.4),3(/,17X,12(I4,F7.4)))
 C RJS 10/11/02 - Added lines to print out reason for failure
          IF ((KTER.LT.6).OR.ITER.GT.30) THEN !NOC.GE.2.AND.
-            IF (ERR.GE.1d-1) ERR = 1d-2
-            IF (ERMAX.GT.1d1) ERMAX = 1d0
+            IF (ERR.GE.1d-1) THEN
+                WRITE (333,*) 'ERR was: ', ERR
+                ERR = 1d-2
+                WRITE (333,*) 'ERR Set to: ', ERR
+            ENDIF
+            IF (ERMAX.GT.1d1) THEN
+                ERMAX = 1d0
+            ENDIF
          END IF
-!         IF (ERR.GE.1d-1) THEN 
-!            WRITE(32,*) "ERR tolerance exceeded:",ERR
-!         END IF
-!         IF (ERMAX.GE.1D1) THEN 
-!            WRITE(32,*) "ERMAX tolerance exceeded in variable ", JMAX
-!            WRITE(32,*) "at meshpoint ", KMAX, " ERMAX=", ERMAX 
-!         END IF
+         IF (ERR.GE.1d-1) THEN 
+            WRITE(333,*) "ERR tolerance exceeded:",ERR
+         END IF
+         IF (ERMAX.GE.1D1) THEN 
+            WRITE(333,*) "ERMAX tolerance exceeded in variable ", JMAX
+            WRITE(333,*) "at meshpoint ", KMAX, " ERMAX=", ERMAX 
+         END IF
 C NaN trap
          IF (ERR.NE.ERR) THEN
-!            WRITE(32,*) "SNAFU, restarting"
-               ERR = 1d1
+            WRITE(333,*) "SNAFU, restarting"
+            WRITE (333,*) 'ERR = ', ERR
+            ERR = 1d2
          END IF
-!         CALL FLUSH (32)
+         CALL FLUSH (333)
          IF ( IH.GT.0 ) IH = IH - 1
          IE(9) = IH
 C APPLY CORRECTIONS, SCALED DOWN IF TOO LARGE
@@ -286,7 +295,7 @@ C APPLY CORRECTIONS, SCALED DOWN IF TOO LARGE
          IF (ERR.LT.EPS.AND.FACSG.NE.1d0) THEN
             FACSG = 10.0*FACSG
             FACSG = DMIN1(1d0,FACSG)
-!            write(32,*) "Boosting mixing", FACSG
+            write(333,*) "Boosting mixing", FACSG
             ERR = 1d-3
 C Yes, I know I shouldn't do this, but haven't worked out another way yet
             GOTO 600
