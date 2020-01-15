@@ -179,6 +179,24 @@ C e.g. SM = stellar mass, solar units; DTY = next timestep, years
      :TENG, SMASS, FMASS, INJMD, STARTTIMEINJ, ENDTIMEINJ,
      :ENDAGE
       WRITE (333, 99005)
+      WRITE (333,*) '==========================TZO CONTROL FILE START=========================='
+      WRITE (333, 99101) itzo_yn,itzo_cmass_pre, itzo_stripcorehe, itzo_stophighburn,
+     :          itzo_noneutburn, itzo_zerocore,
+     :          itzo_ct_1, itzo_ct_2, itzo_ct_3
+      WRITE (333,*)
+      WRITE (333,99102) rtzo_mod_emass, rtzo_dcmassdt,
+     :          rtzo_maxdt,
+     :          rtzo_cut_non_degen_hburn,
+     :          rtzo_EC,
+     :          rtzo_nucap, rtzo_nucap_per_yr, rtzo_nucap_min,
+     :          rtzo_degen_cutoff,rtzo_degen_cutoff_per_yr, rtzo_degen_cutoff_max,
+     :          rtzo_RCD_per_yr, rtzo_RCD_max,
+     :          rtzo_meshfluid, rtzo_meshfluid_per_yr, rtzo_meshfluid_min,
+     :          rtzo_alpha, rtzo_alpha_per_yr, rtzo_alpha_max,
+     :          rtzo_ct_1, rtzo_ct_1_per_yr, rtzo_ct_1_max,
+     :          rtzo_ct_2, rtzo_ct_2_per_yr, rtzo_ct_2_max,
+     :          rtzo_ct_3, rtzo_ct_3_per_yr, rtzo_ct_3_max
+      WRITE (333,*) '==========================TZO CONTROL FILE END=========================='
       WRITE (333, 99005) SM, DTY, AGE, PER, BMS, EC,NH,NP,NMOD,IB,PMH(1),PME(1)
       
 C Print out some basic details about the run

@@ -38,6 +38,7 @@ c     :                RW(16)
 *
 * Extra COMMON for main-sequence evolution.
 *
+      COMMON /MODMASSPRINT/ fictmass(MAXMSH)
       COMMON /ZAMS  / TKH(2)
       COMMON /MESH  / TRC1,TRC2,DD,DT1,DT2,MWT,MWTS,IVMC,IVMS
       COMMON /MIX   / KBICZ,KICZ
@@ -88,7 +89,7 @@ C Used A&G for H,He,C,N,O,Ne rather than input for convenience
      :     ' Ni58',' Ni59',' Ni60',' Ni61', '  p  ',' He4 ',' C12 ',
      :     ' N14 ',' O16 ',' Ne20','  m  '/
 99001 FORMAT (/, '  K', 17(4X, A5, 2X),/)
-99002 FORMAT (I4, 1P, 34(1X,E10.3))
+99002 FORMAT (I4, 1P, 35(1X,E10.3))
 99003 FORMAT (/, 1X, I7, '  dt/age/MH/MHe  tn/tKH/Mb  P/rlf/dM LH/LHe/',
      :'LC Lth/Lnu/m  H1      He4     C12     N14     O16     Ne20    ',
      :'He3       psi    dens    temp', 2(/, F8.4, 1P, E16.9, 4E10.3,
@@ -335,9 +336,9 @@ C RJS 4/4/07 Locate TH boundaries
             END IF
 C Print the interior details on first `page', if required
             IF ( NPRINT.EQ.1.AND.MOD(K-1,NWRT2).EQ.0 ) WRITE(32+20*(ISTAR-1),99002) K,
-     :           (PX(ISX(J)), J=1,34)
+     :           (PX(ISX(J)), J=1,34), fictmass(K)
             IF ( NPRINT.EQ.1.AND.MOD(K-1,NWRT2).EQ.0 ) WRITE(333+20*(ISTAR-1),99002) K,
-     :           (PX(ISX(J)), J=1,34)
+     :           (PX(ISX(J)), J=1,34), fictmass(K)
 99007       FORMAT (I4, 1P, 17(1X,E10.3))
             IF ( NPRINT.EQ.1.AND.MOD(K,10*NWRT2).EQ.0 ) WRITE(333+20*(ISTAR-1),99002)
             IF ( NPRINT.EQ.1.AND.MOD(K-1,NWRT2).EQ.0.AND.IW(102).NE.0) 

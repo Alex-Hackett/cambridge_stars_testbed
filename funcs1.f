@@ -69,6 +69,7 @@ C Common blocks for TZO stuff
      :          rtzo_ct_2, rtzo_ct_2_per_yr, rtzo_ct_2_max,
      :          rtzo_ct_3, rtzo_ct_3_per_yr, rtzo_ct_3_max
       COMMON /TZOSTUFF/ cmass
+      COMMON /MODMASSPRINT/ fictmass(MAXMSH)
       
       
       DIMENSION XSPEC(6), DDMIX(10), MUXX(6)
@@ -258,6 +259,7 @@ C TZO stuff, compute PSIF
         ENDIF
         EC2 = rtzo_EC * MAX(0.D0, cmass - 1.D0)
         TOINJ = TOINJ + EC2
+        fictmass(K) = cmass
       ENDIF
       
       
