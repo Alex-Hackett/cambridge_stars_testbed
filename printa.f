@@ -819,8 +819,8 @@ C TZO Stuff
 C TZO stuff, need to zero out compositions in the "core"
       IF (itzo_yn.EQ.1) THEN
         IF (itzo_zerocore.EQ.1) THEN
-            MCORE = VME ! This is the mass of the carbon oxygen core
-            MCORE = 
+            !MCORE = VME ! This is the mass of the carbon oxygen core
+            MCORE = rtzo_core_mass ! This is a set coremass that we can determine
             OLDMCORE = MCORE
             DO JJ = 1, NH
                 J = NH + 1 - JJ
