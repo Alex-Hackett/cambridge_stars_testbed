@@ -30,7 +30,8 @@
      :          rtzo_alpha, rtzo_alpha_per_yr, rtzo_alpha_max,
      :          rtzo_ct_1, rtzo_ct_1_per_yr, rtzo_ct_1_max,
      :          rtzo_ct_2, rtzo_ct_2_per_yr, rtzo_ct_2_max,
-     :          rtzo_ct_3, rtzo_ct_3_per_yr, rtzo_ct_3_max
+     :          rtzo_ct_3, rtzo_ct_3_per_yr, rtzo_ct_3_max,
+     :          rtzo_core_mass
       write (333,*) "Remeshing model"
 C RJS 22/11/07 - Save NMESH, we need it for the second remesh pass
       NMESHORIG = NMESH

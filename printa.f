@@ -72,7 +72,8 @@ C Common blocks for TZO stuff
      :          rtzo_alpha, rtzo_alpha_per_yr, rtzo_alpha_max,
      :          rtzo_ct_1, rtzo_ct_1_per_yr, rtzo_ct_1_max,
      :          rtzo_ct_2, rtzo_ct_2_per_yr, rtzo_ct_2_max,
-     :          rtzo_ct_3, rtzo_ct_3_per_yr, rtzo_ct_3_max
+     :          rtzo_ct_3, rtzo_ct_3_per_yr, rtzo_ct_3_max,
+     :          rtzo_core_mass
       COMMON /TZOSTUFF/ cmass
       COMMON /PRETZO/ S_DTZO(100)
       
@@ -157,12 +158,13 @@ C Read the TZO Control data
      :          rtzo_alpha, rtzo_alpha_per_yr, rtzo_alpha_max,
      :          rtzo_ct_1, rtzo_ct_1_per_yr, rtzo_ct_1_max,
      :          rtzo_ct_2, rtzo_ct_2_per_yr, rtzo_ct_2_max,
-     :          rtzo_ct_3, rtzo_ct_3_per_yr, rtzo_ct_3_max
+     :          rtzo_ct_3, rtzo_ct_3_per_yr, rtzo_ct_3_max,
+     :          rtzo_core_mass
       !CLOSE (70)
 99101 FORMAT (I4,/,I4,/,I4,/,I4,/,I4,/,I4,/,3I4)
 99102 FORMAT (2E14.6,/,E14.6,/,E14.6,/,E14.6,/,3E14.6,/,
      :        3E14.6,/,2E14.6,/,3E14.6,/,3E14.6,/,
-     :        3E14.6,/,3E14.6,/,3E14.6)  
+     :        3E14.6,/,3E14.6,/,3E14.6,/,E14.6)  
 C Idiot proofing -- otherwise the logic in solver will fail
       FACSGMIN = DMIN1(1d0, FACSGMIN)
 C Read data for initial model (often last model of previous run)
@@ -195,7 +197,8 @@ C e.g. SM = stellar mass, solar units; DTY = next timestep, years
      :          rtzo_alpha, rtzo_alpha_per_yr, rtzo_alpha_max,
      :          rtzo_ct_1, rtzo_ct_1_per_yr, rtzo_ct_1_max,
      :          rtzo_ct_2, rtzo_ct_2_per_yr, rtzo_ct_2_max,
-     :          rtzo_ct_3, rtzo_ct_3_per_yr, rtzo_ct_3_max
+     :          rtzo_ct_3, rtzo_ct_3_per_yr, rtzo_ct_3_max,
+     :          rtzo_core_mass
       WRITE (333,*) '==========================TZO CONTROL FILE END=========================='
       WRITE (333, 99005) SM, DTY, AGE, PER, BMS, EC,NH,NP,NMOD,IB,PMH(1),PME(1)
       
