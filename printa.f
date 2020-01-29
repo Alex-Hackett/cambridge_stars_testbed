@@ -217,7 +217,8 @@ C Print out some basic details about the run
       IF (ENDAGE.LE.10**6) WRITE (*,*) 'Desired Final Age of Star: ', ENDAGE, 'Yrs'
       IF ((ENDAGE.GT.10**6).AND.(ENDAGE.LT.10**9)) WRITE (*,*) 'Desired Final Age of Star: ', ENDAGE / 10**6, 'Myrs'
       IF (ENDAGE.GE.10**9) WRITE (*,*) 'Desired Final Age of Star: ', ENDAGE / 10**9, 'Gyrs'
-      WRITE (*,*) 'Maximum Number of Allowed Models: ', NP
+      IF (NP.NE.0) WRITE (*,*) 'Maximum Number of Allowed Models: ', NP
+      IF (NP.EQ.0) WRITE (*,*) 'No Upper Limit Let on Number of Allowed Models'
       WRITE (*,*) '===================================================================================================='
       
            
@@ -339,9 +340,12 @@ C         write (*,*) 'DONE!!'
             AM(J) = BN(J)
          END DO
       END IF
-C Read the initial model         
+C Read the initial model 
+79002 FORMAT (1P, 12E20.13, 0P)       
       DO  K = 1, NH
+         !WRITE (*,*) 'READING LINE: ', K
          READ (30, 99002) (H(J,K), J=1, JIN)
+         !WRITE (*,*) 'CORRECTLY READ LINE: ', K
       END DO
 * If available, read initial (last converged) changes
       DO K = 1, NH
@@ -724,7 +728,7 @@ C Trying this again, we need to reduce the timestep while we're injecting energy
          
 C TZO, max timestep
          IF (itzo_yn.EQ.1) THEN
-            IF (DTF*DTY.GT.rtzo_maxdt) THEN
+            IF ((DTF*DTY).GT.rtzo_maxdt) THEN
                 DTF = rtzo_maxdt / DTY
                 DTY = DTF*DTY
             ENDIF
@@ -812,7 +816,8 @@ C TZO Stuff
 C TZO stuff, need to zero out compositions in the "core"
       IF (itzo_yn.EQ.1) THEN
         IF (itzo_zerocore.EQ.1) THEN
-            MCORE = VMH + VME
+            MCORE = VME ! This is the mass of the carbon oxygen core
+            MCORE = 
             OLDMCORE = MCORE
             DO JJ = 1, NH
                 J = NH + 1 - JJ

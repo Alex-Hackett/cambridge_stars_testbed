@@ -65,6 +65,11 @@ C RJS 19/1/04
                XA(I) = 0d0
                WW(I) = 0d0
             END IF
+            !WRITE (*,*) 'NEUTRON: I, XA(I) = ', I, XA(I)
+            IF (XA(I).NE.XA(I)) THEN
+                XA(I) = 0d0
+                WW(I) = 0d0
+            ENDIF
          END DO
          DO I = 1, 50
             XA2(I) = HNUC(I+50*(ISTAR-1),K) + DHNUC(I+50*(ISTAR-1),K)

@@ -104,6 +104,12 @@ C RJS 19/1/04
             XA(I) = 0d0
             WW(I) = 0d0
          END IF
+C Deal with NaNs
+         !WRITE (*,*) 'FUNCS2: I, XA(I) = ', I, XA(I)
+         IF (XA(I).NE.XA(I)) THEN
+            XA(I) = 0d0
+            WW(I) = 0d0
+         ENDIF
       END DO
       DO I = 1, 50
          XA2(I) = WN(I)

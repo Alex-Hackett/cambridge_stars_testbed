@@ -10,6 +10,7 @@ C Following is the main routine
       PARAMETER (MAXMSH = 2000)
 *      REAL MSUM
       COMMON H(60,MAXMSH),DH(60,MAXMSH),EPS,V(2),NMESH,JIN,ID(100),IE(100)
+*      COMMON /NUCMAT/ HNUC(100,MAXMSH), DHNUC(100,MAXMSH)
       COMMON /EVMODE/ IMODE
       COMMON /SODDS / ALPHA, RML, CMG, CSI, CFE, CT(10), AGE, DT, M1, 
      :  EC, BM, ANG, CM, MTA, MTB, TM(2), T0, M0, TC(2), OS, AC, RCD,
@@ -45,7 +46,7 @@ C Common blocks for TZO stuff
       real dtime,cpu(2),dt,tcpu
 C Read physical data and an initial model
       CALL PRINTA ( -1, NSTEP, ITER1, ITER2, NWRT5 )
-      IF (NSTEP.EQ.0) GO TO 3
+      !IF (NSTEP.EQ.0) GO TO 3
       ITER = ITER1
       nter = 0
       nm = 0
@@ -56,14 +57,14 @@ C Read physical data and an initial model
 C Begin evolutionary loop of NSTEP time steps
       WRITE (*,*) 'BEGINNING COMPUTATION'
       CALL CPU_TIME(START)
-    2 IF (NM .EQ. NSTEP) GOTO 3
+    2 IF ((NM.EQ.NSTEP).AND.(NSTEP.NE.0)) GOTO 3
 
 C Have we reached the set age?
 *      IF (AGE.GT.(1.27038904*10)**10) THEN
 *        WRITE (*,*) 'Set Age Reached'
 *        GOTO 3
 *      ENDIF
-         IPRINTAGE = 0
+         IPRINTAGE = 1
          IF (IPRINTAGE.EQ.1) THEN
          IF (AGE.LT.10**6) WRITE (*,*) 'Solving Model: ', NM, '     Model Age: ', AGE, 'Yrs'
          IF ((AGE.LT.10**9).AND.(AGE.GT.10**6)) WRITE (*,*) 'Solving Model: ', NM, '     Model Age: ', AGE/(10**6), 'Myr'
@@ -211,10 +212,10 @@ C Check to see if the model is going through the helium flash TODO
 !        WRITE (*,*) 'EXITING HELIUM FLASH'
 !      ENDIF  
       
-!      IF (VLE.GT.1.00D-05) THEN
-!        WRITE(*,*) '!!!Core Helium Ignition Detected!!!'
-!        GOTO 3
-!      ENDIF
+      !IF (H(9,NMESH).LE.1.D-5) THEN
+      !  WRITE(*,*) '!!!CORE HELIUM DEPLETED: ENTERING E-AGB: TERMINATING!!!'
+      !  GOTO 3
+      !ENDIF
 !      IF (VMH.GE.0.2D0 .AND. iexhaust.EQ.0) THEN
 !      iexhaust = 1
 !      WRITE (*,*) '!!! 0.2 Solar Mass Exhausted Core Reached !!!'

@@ -35,6 +35,21 @@ c     :                RW(16)
      :                QAN, QAO, QANE, QCCA, QCO, QOO, QGNE, QGMG, QCCG,
      :                QPNG, CNUC(390)
       COMMON /WT    / PWT,SG,MK,MT2,LQP,LKP
+      
+      COMMON /ITZO/ itzo_yn,itzo_cmass_pre, itzo_stripcorehe, itzo_stophighburn,
+     :          itzo_noneutburn, itzo_zerocore,
+     :          itzo_ct_1, itzo_ct_2, itzo_ct_3
+      COMMON /RTZO/ rtzo_mod_emass, rtzo_dcmassdt, rtzo_maxdt,
+     :          rtzo_cut_non_degen_hburn, rtzo_EC, rtzo_nucap,
+     :          rtzo_nucap_per_yr, rtzo_nucap_min, rtzo_degen_cutoff,
+     :          rtzo_degen_cutoff_per_yr, rtzo_degen_cutoff_max,
+     :          rtzo_RCD_per_yr, rtzo_RCD_max,
+     :          rtzo_meshfluid, rtzo_meshfluid_per_yr, rtzo_meshfluid_min,
+     :          rtzo_alpha, rtzo_alpha_per_yr, rtzo_alpha_max,
+     :          rtzo_ct_1, rtzo_ct_1_per_yr, rtzo_ct_1_max,
+     :          rtzo_ct_2, rtzo_ct_2_per_yr, rtzo_ct_2_max,
+     :          rtzo_ct_3, rtzo_ct_3_per_yr, rtzo_ct_3_max
+      COMMON /TZOSTUFF/ cmass
 *
 * Extra COMMON for main-sequence evolution.
 *
@@ -89,7 +104,7 @@ C Used A&G for H,He,C,N,O,Ne rather than input for convenience
      :     ' Ni58',' Ni59',' Ni60',' Ni61', '  p  ',' He4 ',' C12 ',
      :     ' N14 ',' O16 ',' Ne20','  m  '/
 99001 FORMAT (/, '  K', 17(4X, A5, 2X),/)
-99002 FORMAT (I4, 1P, 35(1X,E10.3))
+99002 FORMAT (I4, 1P, 38(1X,E10.3)) !OUT FORMAT
 99003 FORMAT (/, 1X, I7, '  dt/age/MH/MHe  tn/tKH/Mb  P/rlf/dM LH/LHe/',
      :'LC Lth/Lnu/m  H1      He4     C12     N14     O16     Ne20    ',
      :'He3       psi    dens    temp', 2(/, F8.4, 1P, E16.9, 4E10.3,
@@ -157,7 +172,7 @@ C     EXX(J) = 0.0D0
 C     Decide whether to print the interior or not
                IF ( MOD(NMOD,NWRT1).EQ.0 ) NPRINT = 1               
                IF ( NPRINT.EQ.1 ) WRITE(333+20*(ISTAR-1), 99001) (AX(ISX(J)), J=1,30)
-               WRITE (32,*) NMOD, AGE, NMESH
+               IF (NPRINT.EQ.1) WRITE (32,*) NMOD, AGE, NMESH
                IF (NPRINT.EQ.1.AND.IW(102).NE.0) WRITE (36+20*(ISTAR-1),*) NMOD
                IF (NPRINT.EQ.1.AND.IW(102).NE.0) WRITE (37+20*(ISTAR-1),*) NMOD
                IF (NPRINT.EQ.1.AND.IW(102).NE.0) WRITE (38+20*(ISTAR-1),*) NMOD
@@ -211,7 +226,7 @@ C Evaluate the functions to be printed
             PX(5) = FK
             PX(6) = GRADA
             PX(7) = GRAD
-            PX(8) = DMIN1(9.99D0, GR)
+            PX(8) = DMIN1(9.99D9, GR)
             PX(9) = VM/MSUN
 C locate convective/radiative boundaries (GR=0)
             IF (KK.LT.2.OR.JC.GT.12.OR.SX(8,KK)*PX(8).GT.0.0D0
@@ -297,7 +312,7 @@ C find points of max energy generation
             PX(13) = XN
             PX(14) = XO
             PX(15) = XNE
-            PX(16) = XHE3 !XMG
+            PX(16) = XMG !XHE3 !XMG
             PX(17) = R/RSUN
             PX(18) = Q(8)/LSUN
             PX(19) = ETH
@@ -335,10 +350,27 @@ C RJS 4/4/07 Locate TH boundaries
                JTHB = JTHB + 1
             END IF
 C Print the interior details on first `page', if required
+!      COMMON /ITZO/ itzo_yn,itzo_cmass_pre, itzo_stripcorehe, itzo_stophighburn,
+!     :          itzo_noneutburn, itzo_zerocore,
+!     :          itzo_ct_1, itzo_ct_2, itzo_ct_3
+!      COMMON /RTZO/ rtzo_mod_emass, rtzo_dcmassdt, rtzo_maxdt,
+!     :          rtzo_cut_non_degen_hburn, rtzo_EC, rtzo_nucap,
+!     :          rtzo_nucap_per_yr, rtzo_nucap_min, rtzo_degen_cutoff,
+!     :          rtzo_degen_cutoff_per_yr, rtzo_degen_cutoff_max,
+!     :          rtzo_RCD_per_yr, rtzo_RCD_max,
+!     :          rtzo_meshfluid, rtzo_meshfluid_per_yr, rtzo_meshfluid_min,
+!     :          rtzo_alpha, rtzo_alpha_per_yr, rtzo_alpha_max,
+!     :          rtzo_ct_1, rtzo_ct_1_per_yr, rtzo_ct_1_max,
+!     :          rtzo_ct_2, rtzo_ct_2_per_yr, rtzo_ct_2_max,
+!     :          rtzo_ct_3, rtzo_ct_3_per_yr, rtzo_ct_3_max
+!      COMMON /TZOSTUFF/ cmass
+!       99002 FORMAT (I4, 1P, 38(1X,E10.3)) !OUT FORMAT
+             
             IF ( NPRINT.EQ.1.AND.MOD(K-1,NWRT2).EQ.0 ) WRITE(32+20*(ISTAR-1),99002) K,
      :           (PX(ISX(J)), J=1,34), fictmass(K)
             IF ( NPRINT.EQ.1.AND.MOD(K-1,NWRT2).EQ.0 ) WRITE(333+20*(ISTAR-1),99002) K,
      :           (PX(ISX(J)), J=1,34), fictmass(K)
+      
 99007       FORMAT (I4, 1P, 17(1X,E10.3))
             IF ( NPRINT.EQ.1.AND.MOD(K,10*NWRT2).EQ.0 ) WRITE(333+20*(ISTAR-1),99002)
             IF ( NPRINT.EQ.1.AND.MOD(K-1,NWRT2).EQ.0.AND.IW(102).NE.0) 
@@ -453,12 +485,13 @@ C Write to plot
          WRITE (33+20*(ISTAR-1),115) NMOD,AGE,LOG10(PX(17)),LOG10(PX(4)),
      &        LOG10(PX(18)),PX(9),VMH,VME,LOG10(MAX(VLH,1.01D-10)),
      &        LOG10(MAX(VLE,1.01D-10)), LOG10(MAX(VLC,1.01D-10)),
-     &        MCB,VMX(1),VMX(2),LOG10(FK),DTY,(PX(JJ),JJ=10,14),PX(16),
+     &        MCB,VMX(1),VMX(2),VMX(3),LOG10(FK),DTY,(PX(JJ),JJ=10,14),PX(16),
      &        RLF,Q(14),PER,SEP,BM/MSUN,H(13,1),HSPINTOT,HTOT,
      &        OORB*DSQRT(CG), OSPIN*DSQRT(CG), VI(ISTAR),OCRIT, DMT,MEX,THB,MENV(ISTAR)/MSUN,
-     &        RENV(ISTAR)/RSUN, DLOG10(SX(3,2)), DLOG10(SX(4,2))
+     &        RENV(ISTAR)/RSUN, DLOG10(SX(3,2)), DLOG10(SX(4,2)), rtzo_mod_emass,
+     :           rtzo_nucap, rtzo_degen_cutoff, rtzo_meshfluid, rtzo_alpha  
 C There are 99 things in the format statement and 74 have been used.
- 115     FORMAT (I6,1P,E16.9,0P,24F10.5,1P,3E13.6,18(1X,E12.5),0P,152F9.5)
+ 115     FORMAT (I6,1P,E16.9,0P,25F10.5,1P,3E13.6,18(1X,E12.5),0P,152F17.8)
          CALL FLUSH(33+20*(ISTAR-1))
 C Write output for nucleosynthesis stuff
          write (41+20*(ISTAR - 1),116) NMOD,AGE,VMH,VME,VMH - VME,PX(9),XASH,(TCB(I)/1d8,

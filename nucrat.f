@@ -216,6 +216,8 @@ C TZO mess shuts off energy generation by nuke burn in the neutron regions
         IF (itzo_noneutburn.EQ.1 .AND.
      &    PX(1).GT.rtzo_degen_cutoff+4.D0 .AND. itzo_cmass_pre.EQ.1) THEN
             IF (EX.NE.0.D0) THEN
+                WRITE (333,*) 'EX SET TO ZERO IN NEUTRON REGION, EX, PSI: '
+     :              , EX, PX(1)
                 EX = 0.D0
             ENDIF
         ENDIF

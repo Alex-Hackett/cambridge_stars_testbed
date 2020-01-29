@@ -44,10 +44,35 @@
 *
 C Debug, check for integer overflow
         
-         I = 1 + (MT-1)*(TF-TFM(1))/(TFM(MT)-TFM(1))
-         J = 1 + (MR-1)*(FR-FRM(1))/(FRM(MR)-FRM(1))
+         I = INT(1 + ((MT-1)*((TF-TFM(1))/(TFM(MT)-TFM(1)))))
+         J = INT(1 + ((MR-1)*((FR-FRM(1))/(FRM(MR)-FRM(1)))))
+         
+!         DIVBITT = (TF - TFM(1)) / (TFM(MT) - TFM(1))
+!         DIVBITR = (FR - FRM(1)) / (FRM(MR) - FRM(1))
+!         WRITE (*,*) 'FR, FRM(1) = ', FR, FRM(1)
+!         WRITE (*,*) 'FR - FRM(1) = ', FR - FRM(1)
+!         WRITE (*,*) 'FRM(MR) - FRM(1)', FRM(MR) - FRM(1)
+!         WRITE (*,*) 'DIVBITT, DIVBITR = ', DIVBITT, DIVBITR
+!         MULTT = DIVBITT * (MT - 1)
+!         MULTR = DIVBITR * (MR - 1)
+!         WRITE (*,*) 'MULTT, MULTR = ', MULTT, MULTR
+!         WRITE (*,*) 'ADDT, ADDR = ', 1 + MULTT, 1 + MULTR
+!         I = INT(1 + MULTT)
+!         J = INT(1 + MULTR)
+!         WRITE (*,*) 'I, J = ', I, J
+         
+          
+         
          !WRITE (*,*) MT, TF, TFM(1), TFM(MT)
-
+         !WRITE (333,*) 'TFM(MT), TFM(1) :: FRM(MR), FRM(1)', TFM(MT), TFM(1), FRM(MR), FRM(1) 
+!         IF (I.LT.1) THEN 
+!            I = MT
+!            WRITE (333,*) '!!OVERFLOW I Set to ',MT, '!!'
+!         ENDIF
+!         IF (J.LT.1) THEN
+!            J = MR
+!            WRITE (333,*) '!!OVERFLOW J Set to ',MR, '!!'
+!         ENDIF  
          DT = TF-TFM(I)
          DR = FR-FRM(J)
 *         WRITE (*,*) 'FRM(J), FR, DR', FRM(J), FR, DR         

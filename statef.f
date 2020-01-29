@@ -91,6 +91,7 @@ C     electron mass modification
       NZZ = 0.0
       AVM = 0.0
       DO I = 1, 10
+         !WRITE (*,*) 'I, XA(I), BN(I)', I, XA(I), BN(I)
          NA(I) = XA(I)/BN(I)
          AVM = AVM + AM(I)*NA(I)
          NIO = NIO + NA(I)
@@ -116,6 +117,7 @@ C     electron mass modification
       SIT = 0.0
       UI = 0.0
       DO I = ION+1, 9
+         !WRITE (*,*) 'I, NE, IZ(I), NA(I) =', I, NE, IZ(I), NA(I)
          NE = NE + IZ(I)*NA(I)
          VM = AM(I)*SQRT(AM(I))
          SI = SI - NA(I)*LOG(NA(I)/VM + EPS)
@@ -184,7 +186,9 @@ C     electron mass modification
       AC = NA(1)*NE
       HG = 2*AC/(SQRT(AB*AB + 4*AA*AC) + AB)
       HI = HA(1)*HG
+      !WRITE (*,*)  'NE, HI = ', NE, HI
       NE = NE + HI
+      !WRITE (*,*)  'NE = ', NE
       EN = 1.0/NE
       H2 = H2A*HG*HG*EN
       NI = NIO - H2
@@ -216,6 +220,7 @@ C     electron mass modification
       DB = EN*DE
       DL = LOG(DB)
       RHO = DB*AVM
+      !WRITE (*,*) 'EN, DE, DB, DL, AVM', EN, DE, DB, DL, AVM
       
 C TZO, increasing density if we have only neutrons here!!
       IF (itzo_yn.EQ.1) THEN
@@ -226,6 +231,7 @@ C TZO, increasing density if we have only neutrons here!!
         ENDIF
       ENDIF
       RL = LOG(RHO)
+      !WRITE (*,*) 'RHO, RL = ', RL, RHO
       RT = RET - EN*NET
       RF = REF - EN*NEF
 * second call to PRESSI compensates for spurious pressure and entropy terms
@@ -264,6 +270,7 @@ C TZO, increasing density if we have only neutrons here!!
 * TST ought to be zero, if all the above programming is correct
       TST = SF/CR - P*(RT*PF-RF*PT)/(TCR*RHO)
 *** END OF THERMODYNAMIC CALCULATION. BEGINNING OF TABLE-BASED CALCULATIONS
+      !WRITE (*,*) 'RL, CLN10 = ', RL, CLN10
       FR = RL/CLN10
       TF = TL/CLN10
 * Opacity tables from Alexander & Ferguson (1994; molecular), Itoh (1983;
@@ -434,6 +441,7 @@ C Common blocks for TZO stuff
                END DO
             ELSE
 *     bicubic spline interpolation
+               !WRITE (*,*) 'STATEF FR = ', FR 
                CALL OPACTY(JX,TF,FR,FKL,FKH)
             END IF
             FK = XT*10D0**FKH + XU*10D0**FKL
