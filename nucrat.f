@@ -32,6 +32,7 @@ C Common blocks for TZO stuff
      :          rtzo_ct_3, rtzo_ct_3_per_yr, rtzo_ct_3_max,
      :          rtzo_core_mass
       COMMON /TZOSTUFF/ cmass
+      COMMON /TZONUKE/ H_CTRL, HE_CTRL, C_CTRL
       
      
       dimension czw(20)
@@ -170,7 +171,7 @@ C      PP3 = 1.0 - PP2
 C      QPP = QRT(1) + 0.5*QRT(2)
 C      QNPP = (QNT(1) + F34*(QNT(4)*PP2 + QNT(5)*PP3))/(1.0 + F34)
 C Put rates back to RRT
-      RRT(2) = RPP
+      RRT(2) = RPP 
       RRT(3) = R33
       RRT(4) = R34
       RRT(5) = RBE
@@ -183,12 +184,36 @@ C Put rates back to RRT
       RRT(12) = RAN
       RRT(13) = RAO
       RRT(14) = RANE
-      RRT(15) = RCC
-      RRT(16) = RCO
-      RRT(17) = ROO
+      RRT(15) = RCC 
+      RRT(16) = RCO 
+      RRT(17) = ROO 
       RRT(18) = RGNE
       RRT(19) = RGMG
       RRT(20) = RCCG
+      IF (itzo_yn.EQ.1) THEN
+          RRT(2) = RPP * H_CTRL
+          RRT(3) = R33 * H_CTRL
+          RRT(4) = R34 * H_CTRL
+          RRT(5) = RBE * H_CTRL
+          RRT(6) = RBP * H_CTRL
+          RRT(7) = RPC * H_CTRL
+          RRT(8) = RPN * H_CTRL
+          RRT(9) = RPO * H_CTRL
+              
+            
+          RRT(10) = R3A * HE_BURN
+          RRT(11) = RAC * HE_BURN
+          RRT(12) = RAN * HE_BURN
+          RRT(13) = RAO * HE_BURN
+          RRT(14) = RANE * HE_BURN
+      
+          RRT(15) = RCC * C_CTRL
+          RRT(16) = RCO * C_CTRL
+          RRT(17) = ROO * C_CTRL
+          RRT(18) = RGNE * C_CTRL
+          RRT(19) = RGMG * C_CTRL
+          RRT(20) = RCCG * C_CTRL
+      ENDIF
       RRT(21) = RPNG
 * calculate energy release and neutrino loss, in erg/gram/sec
       EX = 0d0
@@ -215,7 +240,7 @@ C      ENX = QNPP*RPP
 C TZO mess shuts off energy generation by nuke burn in the neutron regions      
       IF (itzo_yn.EQ.1) THEN
         IF (itzo_noneutburn.EQ.1 .AND.
-     &    PX(1).GT.rtzo_degen_cutoff+4.D0 .AND. itzo_cmass_pre.EQ.1) THEN
+     &    PX(1).GT.rtzo_degen_cutoff-4.D0 .AND. itzo_cmass_pre.EQ.1) THEN
             IF (EX.NE.0.D0) THEN
                 WRITE (333,*) 'EX SET TO ZERO IN NEUTRON REGION, EX, PSI: '
      :              , EX, PX(1)

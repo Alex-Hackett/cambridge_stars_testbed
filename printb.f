@@ -366,11 +366,17 @@ C Print the interior details on first `page', if required
 !     :          rtzo_ct_3, rtzo_ct_3_per_yr, rtzo_ct_3_max
 !      COMMON /TZOSTUFF/ cmass
 !       99002 FORMAT (I4, 1P, 38(1X,E10.3)) !OUT FORMAT
-             
+!           Interior Detail Plots!             
             IF ( NPRINT.EQ.1.AND.MOD(K-1,NWRT2).EQ.0 ) WRITE(32+20*(ISTAR-1),99002) K,
      :           (PX(ISX(J)), J=1,34), fictmass(K)
             IF ( NPRINT.EQ.1.AND.MOD(K-1,NWRT2).EQ.0 ) WRITE(333+20*(ISTAR-1),99002) K,
      :           (PX(ISX(J)), J=1,34), fictmass(K)
+!           Check if this was the center, if so, store a bunch of central stuff for plotting
+            IF (K.EQ.NMESH) THEN
+                CENTRAL_PSI = PX(1)
+            ENDIF    
+                 
+            
       
 99007       FORMAT (I4, 1P, 17(1X,E10.3))
             IF ( NPRINT.EQ.1.AND.MOD(K,10*NWRT2).EQ.0 ) WRITE(333+20*(ISTAR-1),99002)
@@ -483,14 +489,20 @@ C Orbital angular velocity
          OCRIT = DSQRT(6.67d-11*PX(9)*2d30/(6.96d8*PX(17))**3.0) !/DSQRT(CG)
          SEP = SEP/RSUN 
 C Write to plot
+         CENTRAL_H = H(5,NMESH)
+         CENTRAL_HE = H(9,NMESH)
+         CENTRAL_C = H(10,NMESH)
+         CENTRAL_O = H(3,NMESH)
+         CENTRAL_EMASS = fictmass(NMESH)
          WRITE (33+20*(ISTAR-1),115) NMOD,AGE,LOG10(PX(17)),LOG10(PX(4)),
      &        LOG10(PX(18)),PX(9),VMH,VME,LOG10(MAX(VLH,1.01D-10)),
      &        LOG10(MAX(VLE,1.01D-10)), LOG10(MAX(VLC,1.01D-10)),
      &        MCB,VMX(1),VMX(2),VMX(3),LOG10(FK),DTY,(PX(JJ),JJ=10,14),PX(16),
      &        RLF,Q(14),PER,SEP,BM/MSUN,H(13,1),HSPINTOT,HTOT,
      &        OORB*DSQRT(CG), OSPIN*DSQRT(CG), VI(ISTAR),OCRIT, DMT,MEX,THB,MENV(ISTAR)/MSUN,
-     &        RENV(ISTAR)/RSUN, DLOG10(SX(3,2)), DLOG10(SX(4,2)), rtzo_mod_emass,
-     :           rtzo_nucap, rtzo_degen_cutoff, rtzo_meshfluid, rtzo_alpha  
+     &        RENV(ISTAR)/RSUN, DLOG10(SX(3,2)), DLOG10(SX(4,2)), CENTRAL_EMASS,
+     :        rtzo_nucap, rtzo_degen_cutoff, rtzo_meshfluid, rtzo_alpha,
+     :        CENTRAL_PSI, CENTRAL_H, CENTRAL_HE, CENTRAL_C, CENTRAL_O  
 C There are 99 things in the format statement and 74 have been used.
  115     FORMAT (I6,1P,E16.9,0P,25F10.5,1P,3E13.6,18(1X,E12.5),0P,152F17.8)
          CALL FLUSH(33+20*(ISTAR-1))

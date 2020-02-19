@@ -72,7 +72,12 @@ C Debug, check for integer overflow
 !         IF (J.LT.1) THEN
 !            J = MR
 !            WRITE (333,*) '!!OVERFLOW J Set to ',MR, '!!'
-!         ENDIF  
+!         ENDIF
+         IF ((I.LT.1).OR.(J.LT.1)) THEN
+            FKL = FKLO
+            FKH = FKHO
+            GOTO 123
+         ENDIF  
          DT = TF-TFM(I)
          DR = FR-FRM(J)
 *         WRITE (*,*) 'FRM(J), FR, DR', FRM(J), FR, DR         
@@ -98,6 +103,7 @@ C Debug, check for integer overflow
      &   + DR*(F(4,3,I,J,JX+1) + DR*F(4,4,I,J,JX+1))))))
       ENDIF
   100 FORMAT ('OPACITY OUT OF RANGE',' TF FR FKL FKH ',4F9.4)
+  123 CONTINUE
       RETURN
       END
 

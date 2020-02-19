@@ -76,10 +76,11 @@ C Common blocks for TZO stuff
      :          rtzo_core_mass
       COMMON /TZOSTUFF/ cmass
       COMMON /PRETZO/ S_DTZO(100)
+      COMMON /TZONUKE/ H_CTRL, HE_CTRL, C_CTRL
       
 *99002 FORMAT (1X, 1P, 12E13.5, 0P) 33
-
 99002 FORMAT (1P, 50E15.8, 0P)
+!99002 FORMAT (1P, 50E20.13, 0P)
 99003 FORMAT (12I4,/,12I4,/,7I4,/,1P,5E8.1,0P,/,2(10I3,/,3(30I3,/)),34I
      :3,/,11I3,/, 9F5.2, 1P, 3E8.1,
      :/, E9.2, 0P, 9F6.3, /, 1P, 2(7E9.2, /), 0P, I2, 2(I2,1X,E8.2),2(1X,F4.2)
@@ -152,19 +153,20 @@ C Read the TZO Control data
      :          rtzo_cut_non_degen_hburn,
      :          rtzo_EC,
      :          rtzo_nucap, rtzo_nucap_per_yr, rtzo_nucap_min,
-     :          rtzo_degen_cutoff,rtzo_degen_cutoff_per_yr, rtzo_degen_cutoff_max,
+     :          rtzo_degen_cutoff,rtzo_degen_cutoff_per_yr, rtzo_degen_cutoff_max, rtzo_min_degen,
      :          rtzo_RCD_per_yr, rtzo_RCD_max,
      :          rtzo_meshfluid, rtzo_meshfluid_per_yr, rtzo_meshfluid_min,
      :          rtzo_alpha, rtzo_alpha_per_yr, rtzo_alpha_max,
      :          rtzo_ct_1, rtzo_ct_1_per_yr, rtzo_ct_1_max,
      :          rtzo_ct_2, rtzo_ct_2_per_yr, rtzo_ct_2_max,
      :          rtzo_ct_3, rtzo_ct_3_per_yr, rtzo_ct_3_max,
-     :          rtzo_core_mass
+     :          rtzo_core_mass,
+     :          H_CTRL, HE_CTRL, C_CTRL
       !CLOSE (70)
 99101 FORMAT (I4,/,I4,/,I4,/,I4,/,I4,/,I4,/,3I4)
 99102 FORMAT (2E14.6,/,E14.6,/,E14.6,/,E14.6,/,3E14.6,/,
-     :        3E14.6,/,2E14.6,/,3E14.6,/,3E14.6,/,
-     :        3E14.6,/,3E14.6,/,3E14.6,/,E14.6)  
+     :        4E14.6,/,2E14.6,/,3E14.6,/,3E14.6,/,
+     :        3E14.6,/,3E14.6,/,3E14.6,/,E14.6,/,3E14.6)  
 C Idiot proofing -- otherwise the logic in solver will fail
       FACSGMIN = DMIN1(1d0, FACSGMIN)
 C Read data for initial model (often last model of previous run)
@@ -191,14 +193,15 @@ C e.g. SM = stellar mass, solar units; DTY = next timestep, years
      :          rtzo_cut_non_degen_hburn,
      :          rtzo_EC,
      :          rtzo_nucap, rtzo_nucap_per_yr, rtzo_nucap_min,
-     :          rtzo_degen_cutoff,rtzo_degen_cutoff_per_yr, rtzo_degen_cutoff_max,
+     :          rtzo_degen_cutoff,rtzo_degen_cutoff_per_yr, rtzo_degen_cutoff_max,rtzo_min_degen,
      :          rtzo_RCD_per_yr, rtzo_RCD_max,
      :          rtzo_meshfluid, rtzo_meshfluid_per_yr, rtzo_meshfluid_min,
      :          rtzo_alpha, rtzo_alpha_per_yr, rtzo_alpha_max,
      :          rtzo_ct_1, rtzo_ct_1_per_yr, rtzo_ct_1_max,
      :          rtzo_ct_2, rtzo_ct_2_per_yr, rtzo_ct_2_max,
      :          rtzo_ct_3, rtzo_ct_3_per_yr, rtzo_ct_3_max,
-     :          rtzo_core_mass
+     :          rtzo_core_mass,
+     :          H_CTRL, HE_CTRL, C_CTRL
       WRITE (333,*) '==========================TZO CONTROL FILE END=========================='
       WRITE (333, 99005) SM, DTY, AGE, PER, BMS, EC,NH,NP,NMOD,IB,PMH(1),PME(1)
       
@@ -350,12 +353,21 @@ C Read the initial model
          READ (30, 99002) (H(J,K), J=1, JIN)
          !WRITE (*,*) 'CORRECTLY READ LINE: ', K
       END DO
+      ! hack to allow reading in rosss models
+      IF (JIN.EQ.11) THEN
+        DO K = 1,NH
+            H(12,K) = 0.D0
+            H(13,K) = 3.88304967D+34
+            H(14,K) = 0.D0
+            H(15,K) = 0.D0
+        ENDDO
+      ENDIF
 * If available, read initial (last converged) changes
       DO K = 1, NH
          READ (30, 99002, END = 61, ERR = 61) (DH(J,K), J=1, JIN)
-         DO 15 J = 1,JIN
+         DO J = 1,JIN
             DHPR(J,K) = DH(J,K)
-   15    CONTINUE
+         ENDDO
       END DO
  61   CONTINUE
 C Read in first line of star 2 - most of this gets ignored
@@ -814,13 +826,14 @@ C TZO Stuff
 * modify degeneracy param that we switch to neutronic material at
         rtzo_degen_cutoff = MIN(rtzo_degen_cutoff + 
      &      DTY*rtzo_degen_cutoff_per_yr, rtzo_degen_cutoff_max)
+      IF (rtzo_degen_cutoff.LT.rtzo_min_degen) rtzo_degen_cutoff = rtzo_min_degen
       ENDIF
       
 C TZO stuff, need to zero out compositions in the "core"
       IF (itzo_yn.EQ.1) THEN
         IF (itzo_zerocore.EQ.1) THEN
-            !MCORE = VME ! This is the mass of the carbon oxygen core
-            MCORE = rtzo_core_mass ! This is a set coremass that we can determine
+            MCORE = VMH + VME ! This is the mass of the carbon oxygen core
+            IF (rtzo_core_mass.GT.0) MCORE = rtzo_core_mass ! This is a set coremass that we can determine
             OLDMCORE = MCORE
             DO JJ = 1, NH
                 J = NH + 1 - JJ
@@ -830,6 +843,7 @@ C TZO stuff, need to zero out compositions in the "core"
                     H(5,J) = 0.D0 ! Zero H
                     H(9,J) = 0.D0 ! Zero He
                     H(10,J) = 0.D0 ! Zero C12
+                    !H(12,J) = 0.D0 ! Zero N14
                 ELSE IF ((H(5,J) + H(9,J) + H(10,J)).EQ.0.D0) THEN
                     MCORE = XM
                 ENDIF
