@@ -2,6 +2,7 @@
       SUBROUTINE EQUNS1(K, K1, K2, ISTAR, IVAR)
       IMPLICIT REAL*8(A-H, L, M, O-Z)
       PARAMETER (NMAXMSH = 2000)
+      PARAMETER (DPI=3.141592653589793238D0)
       COMMON /INE   / BC1(3), BC2(3), BC3(3), BCHORB(3), BCHSPIN(3),
      :            VP(3), VPK(3), R2(3), 
      :            R2K(3), VT(3), VTK(3), L(3), LK(3), LQ(3), GTA(3), 
@@ -33,6 +34,15 @@ C VAR(3),(2),(1) are values of VAR at current, previous and anteprevious meshpts
      :          rtzo_ct_2, rtzo_ct_2_per_yr, rtzo_ct_2_max,
      :          rtzo_ct_3, rtzo_ct_3_per_yr, rtzo_ct_3_max,
      :          rtzo_core_mass
+     
+C Common block for Quasi-star stuff
+      COMMON /QSM/ QSM_COREMASS, QSM_CORERAD, QSM_CORELUM
+      COMMON /IQSM/ IQSM_FLAG
+      COMMON /STAT2 / PL, RL, U, P, RHO, FK, T, SF, ST, ZT, GRADA, CP, 
+     :                CH, S, PR, PG, PF, PT, EN, WR(41)
+      COMMON /CNSTS / CPI, PI4, CLN10, CDUM(11), CSECYR, LSUN, MSUN,
+     &                RSUN, TSUNYR
+     
       PS(VX) = 0.5D0*(VX+DABS(VX))
 C 30/5/03 RJS Smooth viscous mesh
       WTM = 0.5 + 0.5*tanh((K - TRC1)/1.5)
@@ -152,19 +162,80 @@ C Note gravitational settling is hard-wired into having H as the dominant elemen
       END IF
 C central boundary conditions for first-order equations
       IF (WTM.GT.1.0) WTM = 1.0
-      IF (WTM.LT.0.0) WTM = 0.0      
-      IF (WTM.NE.0.0) THEN
-         EQU(1) = MT(3)
-      ELSE
-         EQU(1) = VM(3) + 1.5D0*VMK(3) - 0.5D0*VMK(2)
-      END IF
+      IF (WTM.LT.0.0) WTM = 0.0
+C     Normal BCs
+      IF (IQSM_FLAG.EQ.0) THEN      
+          IF (WTM.NE.0.0) THEN
+             EQU(1) = MT(3)
+          ELSE
+             EQU(1) = VM(3) + 1.5D0*VMK(3) - 0.5D0*VMK(2)
+          END IF
 C This was the original central L boundary condition -- PPE said there
 C was a good reason for it but he couldn't remember it.
 C      EQU(2) = L(3) + 0.93333D0*LK(3) - 0.1885D0*LK(2) - LQ(3)*GTA(3)
 C     :         *MT(3)
-      EQU(2) = L(3) + 1.5D0*LK(3) - 0.5D0*LK(2) - LQ(3)*GTA(3)
-     :         *MT(3)
-      EQU(3) = R2(3) + 1.5D0*R2K(3) - 0.5D0*R2K(2)
+          EQU(2) = L(3) + 1.5D0*LK(3) - 0.5D0*LK(2) - LQ(3)*GTA(3)
+     :              *MT(3)
+          EQU(3) = R2(3) + 1.5D0*R2K(3) - 0.5D0*R2K(2)
+      ENDIF
+      
+      ! Quasi-Star BCs
+      IF (IQSM_FLAG.EQ.1) THEN
+      ! Compute the Radius of the NS from a simple TOV EOS
+        QSM_CORERAD = (QSM_COREMASS / (2.08D-6))**(-1.D0 / 3.D0)
+      ! Compute the mass flux from Bondi-Hoyle approach
+        sound_speed = SQRT((4.D0 / 3.D0) * (P/RHO))
+        light_speed = 2.99792458D10
+        !ACCRETE_RATE = DPI * (1.D0 / SQRT(2.D0)) * (QSM_CORERAD**2)
+     !:  !    * RHO * sound_speed
+      ! New accretion rate from Ball 2012, Convective luminosity 
+      ! Argument for cutting the max flux by a factor of 4cs^2 / gammalambdaepsilonprimec^2
+      ! Awful G, I'm very sorry
+      ! will get a cgs style g/s accretion rate from this, (hopefully)
+      ! Untimately want one in Msun yrs^-1
+        ODD_BIG_G = CG
+        ! Fiducial run values for these from Warrick
+        ETA = 0.1D0
+        EPSILONPRIME = 0.1D0
+        ADIABAT = 4.D0 / 3.D0
+        ACCRETE_RATE_CGS = (16.D0 * DPI) * (ETA / (EPSILONPRIME * ADIABAT))
+     :      * (((ODD_BIG_G * (QSM_COREMASS * 1.989D33))**2)/
+     :      (sound_speed * (light_speed)**2)) * RHO 
+      ! Convert accretion rate from g/s to Msun yr^-1
+        ACCRETE_RATE = ACCRETE_RATE_CGS * (5.0279D-34) * CSECYR
+        
+        
+      ! Compute the accretion luminosity from the accretion rate
+        ! I'm unsure what Warrick was desribing exactly as his
+        ! modified accretion luminosity, so I'm including both, for
+        ! posterity's sake
+        
+        !Super simple black hole style accretion
+        !QSM_CORELUM_CGS=EPSILONPRIME * ACCRETE_RATE_CGS * light_speed**2
+        
+        
+        !Maximum convective flux based luminosity calculation from
+        ! Warrick 2012, that I don't quite understand, but I feel like
+        ! I should try this out
+        QSM_CORELUM_CGS = ((4.D0)/(ADIABAT * (1.D0 / SQRT(2.D0))))
+     :      * ACCRETE_RATE_CGS * (sound_speed**2)
+        
+      ! Convert to solar units
+        QSM_CORELUM = QSM_CORELUM_CGS / 3.839D33
+      ! Convert from solar input units to code units
+        QSM_COREMASS_EGG = QSM_COREMASS * 1.989D0
+        QSM_CORERAD_EGG = QSM_CORERAD * 0.696D0
+        QSM_CORELUM_EGG = QSM_CORELUM * 3.844D0
+        
+        EQU(1) = QSM_COREMASS_EGG
+        EQU(2) = QSM_CORELUM_EGG
+        EQU(3) = QSM_CORERAD_EGG
+        
+      !Update the core mass based on the accretion rate
+        QSM_COREMASS = QSM_COREMASS + (ACCRETE_RATE * (DT/CSECYR))
+        
+      ENDIF
+      
 C central boundary conditions for second-order equations
       SG2 = 0.5D0*(SG(2)+SG(3))
 C Plus thermohaline mixing

@@ -504,7 +504,7 @@ C Write to plot
      :        rtzo_nucap, rtzo_degen_cutoff, rtzo_meshfluid, rtzo_alpha,
      :        CENTRAL_PSI, CENTRAL_H, CENTRAL_HE, CENTRAL_C, CENTRAL_O  
 C There are 99 things in the format statement and 74 have been used.
- 115     FORMAT (I6,1P,E16.9,0P,25F10.5,1P,3E13.6,18(1X,E12.5),0P,152F17.8)
+ 115     FORMAT (I6,1P,E19.9,0P,25F18.5,1P,3E18.6,18(1X,E19.5),0P,152F25.8)
          CALL FLUSH(33+20*(ISTAR-1))
 C Write output for nucleosynthesis stuff
          write (41+20*(ISTAR - 1),116) NMOD,AGE,VMH,VME,VMH - VME,PX(9),XASH,(TCB(I)/1d8,

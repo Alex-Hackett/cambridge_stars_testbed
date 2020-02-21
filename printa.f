@@ -77,6 +77,11 @@ C Common blocks for TZO stuff
       COMMON /TZOSTUFF/ cmass
       COMMON /PRETZO/ S_DTZO(100)
       COMMON /TZONUKE/ H_CTRL, HE_CTRL, C_CTRL
+      COMMON /PREQSM/ S_QSM(100)
+      
+C Common block for Quasi-star stuff
+      COMMON /QSM / QSM_COREMASS, QSM_CORERAD, QSM_CORELUM
+      COMMON /IQSM/ IQSM_FLAG
       
 *99002 FORMAT (1X, 1P, 12E13.5, 0P) 33
 99002 FORMAT (1P, 50E15.8, 0P)
@@ -85,7 +90,8 @@ C Common blocks for TZO stuff
      :3,/,11I3,/, 9F5.2, 1P, 3E8.1,
      :/, E9.2, 0P, 9F6.3, /, 1P, 2(7E9.2, /), 0P, I2, 2(I2,1X,E8.2),2(1X,F4.2)
      : ,/, I2,F6.1,I2,F6.1, 1X, F4.2, I2, I2, 2(1X, E8.2)
-     : ,/, 3E14.6, I2, 2E14.6, /, E14.6, /, E14.6, E14.6)
+     : ,/, 3E14.6, I2, 2E14.6, /, E14.6, /, E14.6, E14.6,
+     :/, I4,/,3E14.6)
 99004 FORMAT (1X, 10F7.3)
 99005 FORMAT (1X, 1P, 2E14.6, E17.9, 3E14.6, 0P, 4I6, 1P, 2E11.3)
 C Are we loading in a Helium flash model?
@@ -141,7 +147,9 @@ C Read miscellaneous data, usually unchanged during one evol run
      :IVMC, TRC1, IVMS, TRC2, MWTS, IAGB, ISGFAC, FACSGMIN, SGTHFAC,
      :TENG, SMASS, FMASS, INJMD, STARTTIMEINJ, ENDTIMEINJ,
      :ENDAGE,
-     :MINMASS, MAXMASS
+     :MINMASS, MAXMASS,
+     :IQSM_FLAG,
+     :QSM_COREMASS, QSM_CORERAD, QSM_CORELUM
      
 C Read the TZO Control data
       !OPEN (UNIT=70, FILE='tzo_data', ACCESS='SEQUENTIAL', STATUS='OLD')
@@ -181,7 +189,10 @@ C e.g. SM = stellar mass, solar units; DTY = next timestep, years
      :IRAM, IRS1, VROT1, IRS2, VROT2, FMAC, FAM,
      :IVMC, TRC1, IVMS, TRC2, MWTS, IAGB, ISGFAC, FACSGMIN, SGTHFAC,
      :TENG, SMASS, FMASS, INJMD, STARTTIMEINJ, ENDTIMEINJ,
-     :ENDAGE
+     :ENDAGE,
+     :MINMASS, MAXMASS,
+     :IQSM_FLAG,
+     :QSM_COREMASS, QSM_CORERAD, QSM_CORELUM
       WRITE (333, 99005)
       WRITE (333,*) '==========================TZO CONTROL FILE START=========================='
       WRITE (333, 99101) itzo_yn,itzo_cmass_pre, itzo_stripcorehe, itzo_stophighburn,
@@ -225,12 +236,21 @@ C Print out some basic details about the run
       IF (ENDAGE.GE.10**9) WRITE (*,*) 'Desired Final Age of Star: ', ENDAGE / 10**9, 'Gyrs'
       IF (NP.NE.0) WRITE (*,*) 'Maximum Number of Allowed Models: ', NP
       IF (NP.EQ.0) WRITE (*,*) 'No Upper Limit Let on Number of Allowed Models'
-      WRITE (*,*) '===================================================================================================='
+      WRITE (*,*) '================================================================================================================================'
+      
+      IF (IQSM_FLAG.EQ.1) THEN
+      WRITE (*,*) '================================================================================================================================'
+      WRITE (*,*) 'USING QUASI-STAR BOUNDARY CONDITIONS'
+      WRITE (*,*) 'CORE MASS BC: ', QSM_COREMASS, 'SOLAR MASSES'
+      WRITE (*,*) 'CORE RADIUS BC: ', QSM_CORERAD, 'SOLAR RADII'
+      WRITE (*,*) 'CORE LUMINOSITY BC: ', QSM_CORELUM,'SOLAR LUMINOSITIES'
+      WRITE (*,*) '================================================================================================================================'
+      ENDIF
       
            
 C Print out the artifical energy stuff, see if it works
       IF (TENG.GT.0) THEN
-      WRITE (*,*) '===================================================================================================='
+      WRITE (*,*) '================================================================================================================================'
       WRITE (*,*) 'Desired Total Artificial Energy Injection: ', TENG
       WRITE (*,*) 'Desired Mass Below Base of Artificial Energy Region: ', SMASS
       WRITE (*,*) 'Desired Mass Below Top of Artificial Energy Region: ', FMASS
@@ -247,7 +267,7 @@ C Print out the artifical energy stuff, see if it works
       IF (INJMD.EQ.1) WRITE (*,*) 'Artificial Energy Injection Profile in Mass: ', 'TRIANGULAR'
       IF (INJMD.EQ.2) WRITE (*,*) 'Artificial Energy Injection Profile in Mass: ', 'SINE'
       IF (INJMD.EQ.3) WRITE (*,*) 'Artificial Energy Injection Profile in Mass: ', 'EXP'
-      WRITE (*,*) '===================================================================================================='
+      WRITE (*,*) '================================================================================================================================'
       ENDIF
 C Convert RML from eta to coefficient required
       RML = 4d-13*RML
@@ -256,7 +276,7 @@ C Convert RML from eta to coefficient required
 * 
       IF (IOP .EQ. 1) CALL OPSPLN
 !extra lines for COopac bit
-      WRITE (*,*) '===================================================================================================='
+      WRITE (*,*) '================================================================================================================================'
       write(*,*) 'Selection for opacity is:',IOP
       IF (IOP.EQ.1) WRITE (*,*) 'Using V4 Style Extended Opacity Tables'
       cbase=ZS*CC
@@ -295,7 +315,7 @@ C            write (*,*) K,b3
             enddo
          enddo
          CLOSE(10)
-         WRITE (*,*) '===================================================================================================='
+         WRITE (*,*) '================================================================================================================================'
 c     Bit to add in variable molecular bits from old paper in Marigo
 c     Setup composition matrix
          if(IOP.eq.4.or.IOP.eq.6) then
@@ -590,6 +610,11 @@ C   16    PR(J) = CT(J+10)
       S_DTZO(27) = rtzo_ct_3_per_yr
       S_DTZO(28) = rtzo_ct_3_max
       
+C Store the QSM model vars in time
+      S_QSM(1) = QSM_COREMASS
+      S_QSM(2) = QSM_CORERAD
+      S_QSM(3) = QSM_CORELUM
+      
       NPR = NMOD
       KPR = KS
       GOTO 40
@@ -644,6 +669,11 @@ C   10    PR(J) = CT(J+10)
       S_DTZO(26) = rtzo_ct_3
       S_DTZO(27) = rtzo_ct_3_per_yr
       S_DTZO(28) = rtzo_ct_3_max
+      
+C Store the QSM model vars in time
+      S_QSM(1) = QSM_COREMASS
+      S_QSM(2) = QSM_CORERAD
+      S_QSM(3) = QSM_CORELUM
       
       NPR = NMOD
       KPR = KS
@@ -982,6 +1012,11 @@ C   11    CT(J+10) = PR(J)
       rtzo_ct_3 = S_DTZO(26)
       rtzo_ct_3_per_yr = S_DTZO(27)
       rtzo_ct_3_max = S_DTZO(28)
+      
+C Recover the QSM values
+      QSM_COREMASS = S_QSM(1)
+      QSM_CORERAD = S_QSM(2)
+      QSM_CORELUM = S_QSM(3)
       
       NMOD = NPR
    34 DT=0.8*DT
