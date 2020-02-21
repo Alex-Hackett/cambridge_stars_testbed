@@ -38,7 +38,7 @@ C VAR(3),(2),(1) are values of VAR at current, previous and anteprevious meshpts
 C Common block for Quasi-star stuff
       COMMON /QSM/ QSM_COREMASS, QSM_CORERAD, QSM_CORELUM
       COMMON /IQSM/ IQSM_FLAG
-      COMMON /STAT2 / PL, RL, U, P, RHO, FK, T, SF, ST, ZT, GRADA, CP, 
+      COMMON /STAT2 / PL, RL, U, P, RHO, FK, TEMPERATURE, SF, ST, ZT, GRADA, CP, 
      :                CH, S, PR, PG, PF, PT, EN, WR(41)
       COMMON /CNSTS / CPI, PI4, CLN10, CDUM(11), CSECYR, LSUN, MSUN,
      &                RSUN, TSUNYR
@@ -183,11 +183,13 @@ C     :         *MT(3)
       IF (IQSM_FLAG.EQ.1) THEN
       ! Compute the Radius of the NS from a simple TOV EOS
         QSM_CORERAD = (QSM_COREMASS / (2.08D-6))**(-1.D0 / 3.D0)
+      
       ! Compute the mass flux from Bondi-Hoyle approach
-        sound_speed = SQRT((4.D0 / 3.D0) * (P/RHO))
-        light_speed = 2.99792458D10
+      
+        SOUND_SPEED = SQRT((4.D0 / 3.D0) * (P/RHO))
+        
         !ACCRETE_RATE = DPI * (1.D0 / SQRT(2.D0)) * (QSM_CORERAD**2)
-     !:  !    * RHO * sound_speed
+      !:  !    * RHO * sound_speed
       ! New accretion rate from Ball 2012, Convective luminosity 
       ! Argument for cutting the max flux by a factor of 4cs^2 / gammalambdaepsilonprimec^2
       ! Awful G, I'm very sorry
@@ -200,7 +202,7 @@ C     :         *MT(3)
         ADIABAT = 4.D0 / 3.D0
         ACCRETE_RATE_CGS = (16.D0 * DPI) * (ETA / (EPSILONPRIME * ADIABAT))
      :      * (((ODD_BIG_G * (QSM_COREMASS * 1.989D33))**2)/
-     :      (sound_speed * (light_speed)**2)) * RHO 
+     :      (sound_speed * (CL)**2)) * RHO 
       ! Convert accretion rate from g/s to Msun yr^-1
         ACCRETE_RATE = ACCRETE_RATE_CGS * (5.0279D-34) * CSECYR
         
@@ -211,7 +213,7 @@ C     :         *MT(3)
         ! posterity's sake
         
         !Super simple black hole style accretion
-        !QSM_CORELUM_CGS=EPSILONPRIME * ACCRETE_RATE_CGS * light_speed**2
+        !QSM_CORELUM_CGS=EPSILONPRIME * ACCRETE_RATE_CGS * CL**2
         
         
         !Maximum convective flux based luminosity calculation from
