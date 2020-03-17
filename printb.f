@@ -51,6 +51,7 @@ c     :                RW(16)
      :          rtzo_ct_3, rtzo_ct_3_per_yr, rtzo_ct_3_max,
      :          rtzo_core_mass
       COMMON /TZOSTUFF/ cmass
+      COMMON /TERMINATE/ I_TERM_FLAG
 *
 * Extra COMMON for main-sequence evolution.
 *
@@ -494,7 +495,7 @@ C Write to plot
          CENTRAL_C = H(10,NMESH)
          CENTRAL_O = H(3,NMESH)
          CENTRAL_EMASS = fictmass(NMESH)
-         WRITE (33+20*(ISTAR-1),115) NMOD,AGE,LOG10(PX(17)),LOG10(PX(4)),
+         WRITE (33+20*(ISTAR-1),*) NMOD,AGE,LOG10(PX(17)),LOG10(PX(4)),
      &        LOG10(PX(18)),PX(9),VMH,VME,LOG10(MAX(VLH,1.01D-10)),
      &        LOG10(MAX(VLE,1.01D-10)), LOG10(MAX(VLC,1.01D-10)),
      &        MCB,VMX(1),VMX(2),VMX(3),LOG10(FK),DTY,(PX(JJ),JJ=10,14),PX(16),
@@ -503,8 +504,13 @@ C Write to plot
      &        RENV(ISTAR)/RSUN, DLOG10(SX(3,2)), DLOG10(SX(4,2)), CENTRAL_EMASS,
      :        rtzo_nucap, rtzo_degen_cutoff, rtzo_meshfluid, rtzo_alpha,
      :        CENTRAL_PSI, CENTRAL_H, CENTRAL_HE, CENTRAL_C, CENTRAL_O  
+         !WRITE (*,*) 'CENTRAL HE', CENTRAL_HE
+         !IF (CENTRAL_C.GT.0.40D0) THEN
+            !I_TERM_FLAG = 1
+            !WRITE (*,*) 'CORE CARBON ACCUMULATING -- TERMINATING'
+         !ENDIF
 C There are 99 things in the format statement and 74 have been used.
- 115     FORMAT (I6,1P,E19.9,0P,25F18.5,1P,3E18.6,18(1X,E19.5),0P,152F25.8)
+ 115     FORMAT (I6,1P,E19.9,0P,25F18.5,1P,3E18.6,18(1X,E19.5),0P,152F25.11)
          CALL FLUSH(33+20*(ISTAR-1))
 C Write output for nucleosynthesis stuff
          write (41+20*(ISTAR - 1),116) NMOD,AGE,VMH,VME,VMH - VME,PX(9),XASH,(TCB(I)/1d8,

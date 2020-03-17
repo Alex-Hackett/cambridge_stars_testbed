@@ -43,6 +43,8 @@ C Common blocks for TZO stuff
      :          rtzo_ct_3, rtzo_ct_3_per_yr, rtzo_ct_3_max,
      :          rtzo_core_mass
       COMMON /TZOSTUFF/ cmass
+      COMMON /QSM_AGE/ Q_AGE
+      COMMON /TERMINATE/ I_TERM_FLAG
       
       real dtime,cpu(2),dt,tcpu
 C Read physical data and an initial model
@@ -59,12 +61,16 @@ C Begin evolutionary loop of NSTEP time steps
       WRITE (*,*) 'BEGINNING COMPUTATION'
       CALL CPU_TIME(START)
     2 IF ((NM.EQ.NSTEP).AND.(NSTEP.NE.0)) GOTO 3
+    
+      !IF (I_TERM_FLAG.EQ.1) GOTO 3
+      
 
 C Have we reached the set age?
 *      IF (AGE.GT.(1.27038904*10)**10) THEN
 *        WRITE (*,*) 'Set Age Reached'
 *        GOTO 3
 *      ENDIF
+         Q_AGE = AGE
          IPRINTAGE = 1
          IF (IPRINTAGE.EQ.1) THEN
          IF (AGE.LT.10**6) WRITE (*,*) 'Solving Model: ', NM, '     Model Age: ', AGE, 'Yrs'

@@ -36,14 +36,16 @@ C VAR(3),(2),(1) are values of VAR at current, previous and anteprevious meshpts
      :          rtzo_core_mass
      
 C Common block for Quasi-star stuff
-      COMMON /QSM/ QSM_COREMASS, QSM_CORERAD, QSM_CORELUM
+      COMMON /QSM/ QSM_COREMASS, QSM_CORERAD, QSM_CORELUM, QSM_DT
       COMMON /IQSM/ IQSM_FLAG
       COMMON /STAT2 / PL, RL, U, P, RHO, FK, TEMPERATURE, SF, ST, ZT, GRADA, CP, 
      :                CH, S, PR, PG, PF, PT, EN, WR(41)
       COMMON /CNSTS / CPI, PI4, CLN10, CDUM(11), CSECYR, LSUN, MSUN,
      &                RSUN, TSUNYR
-     
+      COMMON H(60,NMAXMSH),DH(60,NMAXMSH),EPS,V(2),NMESH,JIN,ID(100),IE(100) 
+      COMMON /QSM_AGE/ Q_AGE
       PS(VX) = 0.5D0*(VX+DABS(VX))
+      DT = QSM_DT
 C 30/5/03 RJS Smooth viscous mesh
       WTM = 0.5 + 0.5*tanh((K - TRC1)/1.5)
       WTM = MWT*WTM
@@ -177,10 +179,12 @@ C     :         *MT(3)
           EQU(2) = L(3) + 1.5D0*LK(3) - 0.5D0*LK(2) - LQ(3)*GTA(3)
      :              *MT(3)
           EQU(3) = R2(3) + 1.5D0*R2K(3) - 0.5D0*R2K(2)
+          
+          
       ENDIF
       
       ! Quasi-Star BCs
-      IF (IQSM_FLAG.EQ.1) THEN
+      IF (IQSM_FLAG.EQ.11) THEN
       ! Compute the Radius of the NS from a simple TOV EOS
         QSM_CORERAD = (QSM_COREMASS / (2.08D-6))**(-1.D0 / 3.D0)
       
@@ -229,14 +233,80 @@ C     :         *MT(3)
         QSM_CORERAD_EGG = QSM_CORERAD * 0.696D0
         QSM_CORELUM_EGG = QSM_CORELUM * 3.844D0
         
-        EQU(1) = QSM_COREMASS_EGG
+        EQU(1) = (QSM_COREMASS_EGG)
         EQU(2) = QSM_CORELUM_EGG
-        EQU(3) = QSM_CORERAD_EGG
+        EQU(3) = (QSM_CORERAD_EGG)
         
       !Update the core mass based on the accretion rate
         QSM_COREMASS = QSM_COREMASS + (ACCRETE_RATE * (DT/CSECYR))
         
       ENDIF
+      
+      
+      ! Try grow core radius again
+      IF (IQSM_FLAG.EQ.1) THEN
+      
+      EQU(1) = QSM_COREMASS
+      EQU(2) = QSM_CORELUM
+      EQU(3) = QSM_CORERAD
+      
+      !EQU(1) = 0.388675252d0!2.695766905533690D-10
+      !EQU(2) = 3.89051216d02!-4.82362145D-06
+      !EQU(3) = 13.6056164d0!0.016404132d0
+!      IF (QSM_COREMASS.EQ.0) THEN
+!      EQU(1) = (2.695766905533690D-10)
+!      EQU(2) = (01.82362145D-06)
+!      EQU(3) = (0.016404132d0)
+!      QSM_COREMASS = EQU(1)
+!      QSM_CORELUM = EQU(2)
+!      QSM_CORERAD = EQU(3)
+!      ELSEIF (QSM_COREMASS.NE.0) THEN
+!      EQU(1) = QSM_COREMASS
+!      EQU(2) = QSM_CORELUM
+!      EQU(3) = QSM_CORERAD
+!     
+!      IF (QSM_COREMASS.LT.0.388675252d0) QSM_COREMASS=QSM_COREMASS+(1.d-4)
+!      IF (QSM_CORELUM.LT.3.89051216d02) QSM_CORELUM=QSM_CORELUM+(1.d-4)
+!      IF (QSM_CORERAD.LT.13.6056164d0) QSM_CORERAD=QSM_CORERAD+(1.d-4)
+!      
+!      IF (QSM_COREMASS.GE.0.388675252d0) WRITE (*,*) '!!MASS BC REACHED!!'
+!      IF (QSM_CORELUM.GE.3.89051216d02) WRITE (*,*) '!!LUMINOSITY BC REACHED!!'
+!      IF (QSM_CORERAD.GE.13.6056164d0) WRITE (*,*) '!!RADIUS BC REACHED!!'
+  
+      !ENDIF
+      
+      
+      !WRITE (*,*) 'EQU(1), EQU(2), EQU(3)', EQU(1), EQU(2), EQU(3)
+      !EQU(1) = 0.D0
+      !EQU(2) = 0.D0
+      !EQU(3) = 0.D0
+      ENDIF
+      
+      
+*      ! Grow core radius slowly
+*      IF (IQSM_FLAG.EQ.2) THEN
+*      ! Start with normal BCs, slowly increase core radius
+*        !Hack using the radius to, well, store the radius
+*        IF (WTM.NE.0.0) THEN
+*                 EQU(1) = MT(3)
+*              ELSE
+*                 EQU(1) = VM(3) + 1.5D0*VMK(3) - 0.5D0*VMK(2)
+*              END IF
+*              EQU(2) = L(3) + 1.5D0*LK(3) - 0.5D0*LK(2) - LQ(3)*GTA(3)
+*     :                *MT(3)
+*     
+*        IF (QSM_CORERAD.EQ.0.D0) THEN
+*              EQU(3) = R2(3) + 1.5D0*R2K(3) - 0.5D0*R2K(2)
+*              QSM_CORERAD = EQU(3)
+*        ELSE
+*            QSM_CORELUM = 1.1D0
+*            
+*            EQU(3) = EQU(3) + ((QSM_CORELUM * EQU(3)) * (DT/CSECYR))
+*            WRITE (*,*) 'EQU(3)', EQU(3)
+*            QSM_CORERAD = EQU(3)
+*        ENDIF
+*      ENDIF
+          
       
 C central boundary conditions for second-order equations
       SG2 = 0.5D0*(SG(2)+SG(3))

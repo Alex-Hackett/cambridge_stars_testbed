@@ -80,7 +80,7 @@ C Common blocks for TZO stuff
       COMMON /PREQSM/ S_QSM(100)
       
 C Common block for Quasi-star stuff
-      COMMON /QSM / QSM_COREMASS, QSM_CORERAD, QSM_CORELUM
+      COMMON /QSM / QSM_COREMASS, QSM_CORERAD, QSM_CORELUM, QSM_DT
       COMMON /IQSM/ IQSM_FLAG
       
 *99002 FORMAT (1X, 1P, 12E13.5, 0P) 33
@@ -235,10 +235,10 @@ C Print out some basic details about the run
       IF ((ENDAGE.GT.10**6).AND.(ENDAGE.LT.10**9)) WRITE (*,*) 'Desired Final Age of Star: ', ENDAGE / 10**6, 'Myrs'
       IF (ENDAGE.GE.10**9) WRITE (*,*) 'Desired Final Age of Star: ', ENDAGE / 10**9, 'Gyrs'
       IF (NP.NE.0) WRITE (*,*) 'Maximum Number of Allowed Models: ', NP
-      IF (NP.EQ.0) WRITE (*,*) 'No Upper Limit Let on Number of Allowed Models'
+      IF (NP.EQ.0) WRITE (*,*) 'No Upper Limit Set on Number of Allowed Models'
       WRITE (*,*) '================================================================================================================================'
       
-      IF (IQSM_FLAG.EQ.1) THEN
+      IF (IQSM_FLAG.NE.0) THEN
       WRITE (*,*) '================================================================================================================================'
       WRITE (*,*) 'USING QUASI-STAR BOUNDARY CONDITIONS'
       WRITE (*,*) 'CORE MASS BC: ', QSM_COREMASS, 'SOLAR MASSES'
@@ -271,6 +271,21 @@ C Print out the artifical energy stuff, see if it works
       ENDIF
 C Convert RML from eta to coefficient required
       RML = 4d-13*RML
+      
+C Print some of the mass loss things
+      
+      WRITE (*,*) '================================================================================================================================'
+      IF (IML(1).EQ.0) WRITE (*,*) 'No Mass Loss Prescription Selected'
+      IF (IML(1).EQ.1) WRITE (*,*) 'Reimers" Mass Loss Prescription Selected'
+      IF (IML(1).EQ.2) WRITE (*,*) 'Bl ̈ocker Mass Loss Prescription Selected'
+      IF (IML(1).EQ.3) WRITE (*,*) 'Vassiliadis & Wood Mass Loss Prescription Selected'
+      IF (IML(1).EQ.4) WRITE (*,*) 'Wolf-Rayet Mass Loss Prescription Selected'
+      IF (IML(1).EQ.5) WRITE (*,*) 'Massive Star Mass Loss Rates From J.J. Eldridge'
+      IF (IML(1).EQ.8) WRITE (*,*) 'Main Sequence Solar Dynamo Mass Loss Prescription From Johnstone et al (2015)'
+      IF ((IML(1).EQ.1).OR.(IML(1).EQ.2).OR.(IML(1).EQ.8)) WRITE (*,*) 'Mass Loss Eta Coefficent: ',RML / (4d-13), 'Mass Loss Coefficient: ', RML
+      
+      WRITE (*,*) '================================================================================================================================'
+      
 *     
 * Create the spline interpolation data.
 * 
@@ -687,6 +702,44 @@ C `pages' per printed model; also 4-line summary for every NT4'th model
       ANG = ANG/(1.0D0 + RHL*DTY)
       EC = EC*(1.0D0 + DTY*ECT)/(1.0D0 - DTY*ECA*EC) 
       
+      
+      
+C QSM Evolve the central boundary conditions as needed
+      IF (IQSM_FLAG.EQ.1) THEN
+      !Set the initial central BCs
+      IF (AGE.LT.1.d3) THEN
+        !WRITE (*,*) 'INITIAL WRITE'
+        QSM_COREMASS = 0!2.695766905533690D-10  !0.388675252d0
+        QSM_CORELUM = 3.89051216d02!0.d0!-4.82362145D-06         !3.89051216d02
+        QSM_CORERAD = 13.6056164d0!0.016404132d0           !13.6056164d0
+      ENDIF
+      
+      IF (AGE.GE.1.d3) THEN
+        r_magic_num = 1.d-09
+        IF (QSM_COREMASS.LT.0.388675252d0) THEN
+        QSM_COREMASS = QSM_COREMASS + (AGE*r_magic_num*1.d-12)
+        ELSE 
+        WRITE (*,*) '!!!MASS BC REACHED!!!'
+        ENDIF
+        !IF (QSM_CORELUM.LT.3.89051216d02) THEN
+        IF (QSM_COREMASS.LT.0.388675252d0) THEN
+        QSM_CORELUM = QSM_CORELUM + (AGE*r_magic_num*1.d-05)
+        ELSE
+        WRITE (*,*) '!!!LUMINOSITY BC REACHED!!!'
+        ENDIF
+        !IF (QSM_CORERAD.LT.13.6056164d0) THEN
+        IF (QSM_COREMASS.LT.0.388675252d0) THEN
+        QSM_CORERAD = QSM_CORERAD + (AGE*r_magic_num*1.d-05)
+        ELSE
+        WRITE (*,*) '!!!RADIUS BC REACHED!!!'
+        ENDIF
+      ENDIF
+      WRITE (*,*) 'QSM_COREMASS, QSM_CORELUM, QSM_CORERAD',
+     :QSM_COREMASS /1.989d0 , QSM_CORELUM/3.844d0, QSM_CORERAD/0.696d0
+      
+      
+      ENDIF
+      
 C TZO Evolve TZO control parameters with time, as needed...      
       IF (itzo_yn.EQ.1) THEN
         ! Do the neutron luminosity cap rtzo_nucap, rtzo_nucap_per_yr, rtzo_nucap_min
@@ -700,8 +753,6 @@ C TZO Evolve TZO control parameters with time, as needed...
         ! Do the Mesh Fluidity stuff
         rtzo_meshfluid = rtzo_meshfluid * (1.D0 + DTY*rtzo_meshfluid_per_yr)
         rtzo_meshfluid = DMAX1(0.D0, DMIN1(1.D0, rtzo_meshfluid))
-      
-      
       ENDIF
       
 C TZO, evolve the MSF coefficients, as needed 
@@ -779,6 +830,7 @@ C TZO, max timestep
             ENDIF
          ENDIF
          
+         QSM_DT = DT
          
          
          
@@ -871,10 +923,13 @@ C TZO stuff, need to zero out compositions in the "core"
                 
                 IF (XM.LT.MCORE) THEN
                     H(5,J) = 0.D0 ! Zero H
-                    H(9,J) = 0.D0 ! Zero He
+                    H(9,J) = 0.D0 ! Zero He4
                     H(10,J) = 0.D0 ! Zero C12
-                    !H(12,J) = 0.D0 ! Zero N14
-                ELSE IF ((H(5,J) + H(9,J) + H(10,J)).EQ.0.D0) THEN
+                    H(11,J) = 0.D0 !Zero Ne20
+                    H(12,J) = 0.D0 ! Zero N14
+                    H(15,J) = 0.D0 ! Zero He3
+                ELSE IF ((H(5,J) + H(9,J) + H(10,J) + H(11,J) + H(12,J)
+     :                                         + H(15,J)).EQ.0.D0) THEN
                     MCORE = XM
                 ENDIF
             ENDDO

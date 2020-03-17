@@ -77,6 +77,14 @@ C Save RLF data for use in funcs2
 C Different surface mass bc for *1 or *2 of binary
          IF (IB.EQ.1) THEN
 C Select mass loss - RJS 24/6/03
+
+C Try my new dynamo stuff ajh 20
+            IF (IML(ISTAR).EQ.8) THEN
+                OSPIN(ISTAR) = HSPIN(ISTAR)/VI(ISTAR)*SQRT(CG)
+                BC1 = RML * R(ISTAR)**2.D0 * M(ISTAR)**(-3.36D0) * 
+     :          OSPIN(ISTAR)**(1.33D0)     
+                !WRITE (*,*) 'BC1', BC1      
+            ENDIF
             IF (IML(ISTAR).EQ.0) BC1 = 0d0
             IF (IML(ISTAR).EQ.1) THEN
                BC1 = RML*L(ISTAR)*R(ISTAR)/M(ISTAR)
